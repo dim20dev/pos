@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>MESA Print Server</title>
+<script src="/socket.io/socket.io.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qz-tray@2.2.4/qz-tray.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:system-ui,sans-serif;background:#0a0a0f;color:#f0f0f5;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
+.card{background:#111118;border:1px solid #2a2a38;border-radius:16px;padding:28px 32px;width:500px;box-shadow:0 16px 48px rgba(0,0,0,.7)}
+h1{font-size:20px;font-weight:800;margin-bottom:3px}
+h1 span{color:#6366f1}
+.sub{font-size:11px;color:#606078;margin-bottom:20px}
+.sr{display:flex;align-items:center;gap:10px;margin-bottom:8px;padding:9px 12px;background:#18181f;border-radius:8px;border:1px solid #1e1e28}
+.dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;transition:all .3s}
+.dot.g{background:#22c55e;box-shadow:0 0 8px rgba(34,197,94,.6)}
+.dot.r{background:#ef4444}
+.dot.a{background:#f59e0b;animation:bl 1.2s infinite}
+@keyframes bl{0%,100%{opacity:1}50%{opacity:.15}}
+.sl{font-size:12px;font-weight:600;flex:1}
+.sv{font-size:11px;color:#606078}
+.counts{display:flex;gap:8px;margin:14px 0}
+.cbox{flex:1;text-align:center;background:#18181f;border:1px solid #1e1e28;border-radius:8px;padding:10px}
+.cn{font-size:26px;font-weight:900;color:#6366f1}
+.cl{font-size:9px;color:#606078;text-transform:uppercase;letter-spacing:.6px;margin-top:2px}
+.field{display:flex;flex-direction:column;gap:3px;margin-bottom:8px}
+.field label{font-size:10px;font-weight:600;color:#606078;text-transform:uppercase;letter-spacing:.5px}
+.field input,.field select{background:#18181f;border:1px solid #2a2a38;border-radius:7px;color:#f0f0f5;padding:8px 11px;font-size:13px;font-family:inherit;width:100%}
+.field input:focus,.field select:focus{border-color:#6366f1;outline:none}
+.row{display:flex;gap:7px;margin-top:10px;flex-wrap:wrap}
+.btn{height:34px;padding:0 14px;border-radius:7px;border:1px solid #2a2a38;background:#18181f;color:#a0a0b8;font-size:11px;font-weight:700;font-family:inherit;cursor:pointer;transition:all .12s;white-space:nowrap}
+.btn.p{background:#6366f1;border-color:#4f52e0;color:#fff}
+.btn.d{background:rgba(239,68,68,.12);border-color:rgba(239,68,68,.3);color:#ef4444}
+.btn.s{background:rgba(34,197,94,.12);border-color:rgba(34,197,94,.3);color:#22c55e}
+.box{background:rgba(245,158,11,.07);border:1px solid rgba(245,158,11,.2);border-radius:8px;padding:11px 13px;margin-bottom:14px}
+.box h4{font-size:11px;font-weight:700;color:#f59e0b;margin-bottom:5px}
+.box p{font-size:11px;color:#a0a0b8;line-height:1.7}
+.box code{background:rgba(245,158,11,.15);color:#f59e0b;padding:1px 4px;border-radius:3px;font-family:monospace;font-size:10px}
+.log{background:#060609;border:1px solid #1e1e28;border-radius:8px;padding:8px 10px;height:160px;overflow-y:auto;font-family:monospace;font-size:11px;margin-top:12px}
+.ll{padding:2px 0;color:#3a3a55}
+.ll.ok{color:#22c55e}
+.ll.er{color:#ef4444}
+.ll.in{color:#818cf8}
+.ll.wn{color:#f59e0b}
+</style>
+</head>
+<body>
+<div class="card">
+  <h1>MESA <span>Print Server</span></h1>
+  <div class="sub">Keep this tab open on the laptop — prints all tickets and receipts silently for every device</div>
+
+  <div class="box">
+    <h4>Setup — do this once on the laptop</h4>
+    <p>
+      1. Go to <code>qz.io</code> → Download → install QZ Tray (free) → it runs in system tray<br>
+      2. Type your printer name below — exact name from Windows Printers &amp; scanners<br>
+      3. Click <strong>Connect QZ Tray</strong><br>
+      4. A popup appears → click <strong>Allow</strong> → tick <strong>Remember this decision</strong> → done<br>
+      5. <strong>To stop popup forever:</strong> right-click the QZ Tray icon in system tray → <strong>Advanced</strong> → <strong>Allow unsigned</strong> or set <strong>Trust level: Always</strong>
+    </p>
+  </div>
+
+  <div class="sr"><div class="dot a" id="dq"></div><span class="sl">QZ Tray</span><span class="sv" id="vq">Not connected</span></div>
+  <div class="sr"><div class="dot a" id="ds"></div><span class="sl">MESA Server</span><span class="sv" id="vs">Connecting…</span></div>
+  <div class="sr"><div class="dot r" id="dp"></div><span class="sl">Printer</span><span class="sv" id="vp">Not set</span></div>
+
+  <div class="counts">
+    <div class="cbox"><div class="cn" id="ck">0</div><div class="cl">Kitchen</div></div>
+    <div class="cbox"><div class="cn" id="cb">0</div><div class="cl">Bar</div></div>
+    <div class="cbox"><div class="cn" id="cr">0</div><div class="cl">Receipts</div></div>
+  </div>
+
+  <div class="field">
+    <label>Paper Width</label>
+    <select id="cpl">
+      <option value="42" selected>80mm paper — 42 chars per line (standard)</option>
+      <option value="32">58mm paper — 32 chars per line (narrow)</option>
+    </select>
+  </div>
+
+  <div style="background:#18181f;border:1px solid #2a2a38;border-radius:8px;padding:10px;margin-bottom:8px">
+    <div style="font-size:10px;font-weight:700;color:#606078;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Printer Names — exact from Windows Printers & scanners</div>
+    <div class="field" style="margin-bottom:6px">
+      <label>🍳 Kitchen Printer</label>
+      <input id="p-kitchen" placeholder="e.g. FEC TP-100" oninput="saveSlots()">
+    </div>
+    <div class="field" style="margin-bottom:6px">
+      <label>🍺 Bar Printer</label>
+      <input id="p-bar" placeholder="e.g. FEC TP-100 Bar (or same as kitchen)" oninput="saveSlots()">
+    </div>
+    <div class="field" style="margin-bottom:6px">
+      <label>🧾 Receipt Printer</label>
+      <input id="p-receipt" placeholder="e.g. FEC TP-100 (or same as kitchen)" oninput="saveSlots()">
+    </div>
+    <div style="font-size:10px;color:#606078;margin-top:4px">Leave Bar/Receipt blank to use Kitchen printer for everything</div>
+  </div>
+  <div class="field" style="margin-bottom:4px">
+    <label>Default Printer (fallback if slot above is empty)</label>
+    <input id="pname" placeholder="e.g. FEC TP-100" oninput="saveName()">
+  </div>
+
+  <div class="row">
+    <button class="btn p" onclick="connectQZ()">Connect QZ Tray</button>
+    <button class="btn s" onclick="testPrint()">Test Print</button>
+    <button class="btn" onclick="listPrinters()">List All Printers</button>
+    <button class="btn d" onclick="disconnectQZ()">Disconnect</button>
+  </div>
+
+  <div class="log" id="log"></div>
+</div>
+
+<script>
+'use strict';
+
+let socket = null;
+let qzReady = false;
+let printerName = localStorage.getItem('mesa_printer') || '';
+let S = {};
+let ck = 0, cb = 0, cr = 0;
+
+if (printerName) document.getElementById('pname').value = printerName;
+
+function saveName() {
+  printerName = document.getElementById('pname').value.trim();
+  localStorage.setItem('mesa_printer', printerName);
+}
+
+function saveSlots() {
+  var k = document.getElementById('p-kitchen')?.value.trim() || '';
+  var b = document.getElementById('p-bar')?.value.trim() || '';
+  var r = document.getElementById('p-receipt')?.value.trim() || '';
+  localStorage.setItem('mesa_p_kitchen', k);
+  localStorage.setItem('mesa_p_bar', b);
+  localStorage.setItem('mesa_p_receipt', r);
+}
+
+function loadSlots() {
+  var k = localStorage.getItem('mesa_p_kitchen') || '';
+  var b = localStorage.getItem('mesa_p_bar') || '';
+  var r = localStorage.getItem('mesa_p_receipt') || '';
+  var el;
+  el = document.getElementById('p-kitchen'); if(el) el.value = k;
+  el = document.getElementById('p-bar'); if(el) el.value = b;
+  el = document.getElementById('p-receipt'); if(el) el.value = r;
+}
+
+function getPrinterFor(role) {
+  // role: 'kitchen', 'bar', 'receipt'
+  var slotId = 'mesa_p_' + role;
+  var specific = localStorage.getItem(slotId) || '';
+  if (specific) return specific;
+  // Fallback: use kitchen slot or default
+  if (role === 'bar') {
+    var k = localStorage.getItem('mesa_p_kitchen') || '';
+    if (k) return k;
+  }
+  if (role === 'receipt') {
+    var k2 = localStorage.getItem('mesa_p_kitchen') || '';
+    if (k2) return k2;
+  }
+  return printerName; // ultimate fallback
+}
+
+// ── LOGGING ───────────────────────────────────────────
+function log(msg, t) {
+  t = t || 'in';
+  const b = document.getElementById('log');
+  const d = document.createElement('div');
+  d.className = 'll ' + t;
+  d.textContent = new Date().toLocaleTimeString('en-GB') + '  ' + msg;
+  b.appendChild(d);
+  b.scrollTop = b.scrollHeight;
+}
+
+function setDot(id, vid, state, text) {
+  document.getElementById('d' + id).className = 'dot ' + state;
+  document.getElementById('v' + id).textContent = text;
+}
+
+// ── ESC/POS RAW COMMANDS ──────────────────────────────
+// These bytes are what thermal printers natively understand
+// This is why HTML prints blank — thermal printers don't have a browser engine
+var ESC = '\x1B';
+var GS  = '\x1D';
+var LF  = '\x0A';
+
+var INIT       = ESC + '@';
+var BOLD_ON    = ESC + 'E\x01';
+var BOLD_OFF   = ESC + 'E\x00';
+var DBL_ON     = GS  + '!\x11';   // double width + height
+var DBL_OFF    = GS  + '!\x00';
+var BIG_ON     = GS  + '!\x30';   // 4x size — for table number
+var BIG_OFF    = GS  + '!\x00';
+var MED_ON     = GS  + '!\x10';   // double height
+var MED_OFF    = GS  + '!\x00';
+var INV_ON     = GS  + 'B\x01';   // white on black
+var INV_OFF    = GS  + 'B\x00';
+var LEFT       = ESC + 'a\x00';
+var CENTER     = ESC + 'a\x01';
+var RIGHT      = ESC + 'a\x02';
+var CUT        = GS  + 'V\x41\x03';  // partial cut + feed
+var FEED3      = ESC + 'd\x03';
+var FEED5      = ESC + 'd\x05';
+
+function getCpl() { return parseInt(document.getElementById('cpl').value) || 42; }
+
+function divider(ch) {
+  ch = ch || '-';
+  return ch.repeat(getCpl());
+}
+
+function twoCol(left, right) {
+  var cpl = getCpl();
+  var r = String(right);
+  var l = String(left).substring(0, cpl - r.length - 1);
+  var gap = Math.max(1, cpl - l.length - r.length);
+  return l + ' '.repeat(gap) + r;
+}
+
+function centerText(text) {
+  var cpl = getCpl();
+  var t = String(text).substring(0, cpl);
+  var pad = Math.floor((cpl - t.length) / 2);
+  return ' '.repeat(Math.max(0, pad)) + t;
+}
+
+// ── KITCHEN TICKET ────────────────────────────────────
+function kitchenTicket(data) {
+  var num   = data.ticket_num || '?';
+  var dest  = (data.destination || 'kitchen').toUpperCase();
+  var time  = new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+  var items = data.items || [];
+  // Table label — short so it fits in BIG_ON font
+  var tblNum = data.table_number || '';
+  var tblLbl = tblNum ? String(tblNum) : (data.order_type === 'takeaway' ? 'T/A' : '?');
+
+  var c = '';
+  c += INIT;
+  c += LEFT + BOLD_ON + '  ORDER #' + num + '     ' + time + '     ' + dest + LF;
+  c += divider('=') + BOLD_OFF + LF;
+  c += LF;
+
+  // TABLE NUMBER — maximum size inverted block
+  c += CENTER;
+  c += INV_ON + BIG_ON + BOLD_ON;
+  c += '  TABLE  ' + tblLbl + '  ';
+  c += BOLD_OFF + BIG_OFF + INV_OFF + LF;
+  c += LF;
+  c += LEFT;
+
+  c += BOLD_ON + 'WAITER: ' + (data.waiter_name || '').toUpperCase() + BOLD_OFF + LF;
+  c += BOLD_ON + divider('=') + BOLD_OFF + LF;
+  c += LF;
+
+  items.forEach(function(item) {
+    var qty  = item.quantity || item.qty || 1;
+    var name = item.product_name || item.name || '?';
+    var note = item.notes || item.note || '';
+    c += DBL_ON + BOLD_ON + '  ' + qty + 'x  ' + name + BOLD_OFF + DBL_OFF + LF;
+    if (note) { c += BOLD_ON + '     --> ' + note + BOLD_OFF + LF; }
+    c += LF;
+  });
+
+  c += BOLD_ON + divider('=') + BOLD_OFF + LF;
+  c += CENTER + BOLD_ON + dest + ' TICKET' + BOLD_OFF + LEFT + LF;
+  c += FEED3 + CUT;
+  return c;
+}
+
+function cancelTicket(data) {
+  var item  = data.item || {};
+  var qty   = item.quantity || 1;
+  var name  = item.product_name || '?';
+  var note  = item.notes || '';
+  var time  = new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+  var tblNum = data.table_number || '';
+  var tblLbl = tblNum ? String(tblNum) : 'T/A';
+
+  var c = '';
+  c += INIT;
+  c += CENTER + INV_ON + DBL_ON + BOLD_ON + ' !! CANCELLED !! ' + BOLD_OFF + DBL_OFF + INV_OFF + LF;
+  c += LF;
+  c += LEFT + BOLD_ON + '  CANCEL #' + (data.ticket_num || '?') + '     ' + time + BOLD_OFF + LF;
+  c += BOLD_ON + divider('=') + BOLD_OFF + LF;
+  c += LF;
+
+  c += CENTER + INV_ON + BIG_ON + BOLD_ON;
+  c += '  TABLE  ' + tblLbl + '  ';
+  c += BOLD_OFF + BIG_OFF + INV_OFF + LF;
+  c += LF + LEFT;
+
+  c += DBL_ON + BOLD_ON + '  ' + qty + 'x  ' + name + BOLD_OFF + DBL_OFF + LF;
+  if (note) { c += BOLD_ON + '     --> ' + note + BOLD_OFF + LF; }
+  c += LF;
+
+  c += BOLD_ON + divider('=') + BOLD_OFF + LF;
+  c += CENTER + BOLD_ON + '!! REMOVE THIS ITEM !!' + BOLD_OFF + LF;
+  c += LEFT + FEED3 + CUT;
+  return c;
+}
+
+function receipt(order) {
+  var items = (order.items || []).filter(function(i) { return !i.cancelled; });
+  var time  = new Date().toLocaleString('en-GB');
+  var tbl   = order.table_number ? 'Table ' + order.table_number : 'Takeaway';
+  var total = parseFloat(order.total || 0);
+  var EU    = 't';  // Select code page with euro — most Epson/FEC printers
+  var EURO  = '';          // Euro sign in CP858 / CP865
+
+  var c = '';
+  c += INIT;
+
+  // Restaurant header
+  c += CENTER + DBL_ON + BOLD_ON + (S.receipt_name || 'Restaurant') + BOLD_OFF + DBL_OFF + LF;
+  if (S.receipt_address) { c += CENTER + S.receipt_address + LF; }
+  if (S.receipt_phone)   { c += CENTER + S.receipt_phone + LF; }
+  if (S.receipt_vat)     { c += CENTER + 'VAT: ' + S.receipt_vat + LF; }
+  c += LF;
+
+  c += LEFT + BOLD_ON + divider('=') + BOLD_OFF + LF;
+  c += BOLD_ON + tbl + BOLD_OFF + LF;
+  c += time + LF;
+  if (S.receipt_show_waiter !== 'false' && order.waiter_name) {
+    c += 'Waiter: ' + order.waiter_name + LF;
+  }
+  c += BOLD_ON + divider('=') + BOLD_OFF + LF + LF;
+
+  items.forEach(function(item) {
+    var qty   = item.quantity;
+    var price = parseFloat(item.product_price);
+    var sub   = qty * price;
+    c += BOLD_ON + twoCol(qty + 'x ' + item.product_name, eur(sub)) + BOLD_OFF + LF;
+    if (item.notes) { c += '   -> ' + item.notes + LF; }
+  });
+
+  c += LF + BOLD_ON + divider('-') + BOLD_OFF + LF;
+
+  if (order.discount_type) {
+    var dv = parseFloat(order.discount_value || 0);
+    var dlabel = order.discount_type === 'percent' ? 'Discount (' + dv + '%)' : 'Discount';
+    var damount = order.discount_type === 'percent' ? (total / (1 - dv/100)) * (dv/100) : dv;
+    c += twoCol(dlabel, '-' + eur(damount)) + LF;
+    c += BOLD_ON + divider('-') + BOLD_OFF + LF;
+  }
+
+  // Total — big right aligned
+  c += LF + RIGHT + MED_ON + BOLD_ON + 'TOTAL  ' + eur(total) + BOLD_OFF + MED_OFF + LF + LEFT;
+  c += LF;
+
+  if (order.payment_method) {
+    c += CENTER + BOLD_ON + '[ ' + order.payment_method.toUpperCase() + ' ]' + BOLD_OFF + LF + LEFT;
+  }
+
+  if (S.receipt_footer) {
+    c += LF + CENTER + BOLD_ON + divider('*') + BOLD_OFF + LF;
+    c += CENTER + S.receipt_footer + LF;
+    c += CENTER + BOLD_ON + divider('*') + BOLD_OFF + LEFT + LF;
+  }
+  c += FEED5 + CUT;
+  return c;
+}
+
+function revenue(summary) {
+  var date = new Date().toLocaleDateString('en-GB', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
+  var c = '';
+  c += INIT;
+  c += CENTER + DBL_ON + BOLD_ON + (S.receipt_name || 'Restaurant') + BOLD_OFF + DBL_OFF + LF;
+  c += CENTER + BOLD_ON + 'DAILY REVENUE' + BOLD_OFF + LF;
+  c += CENTER + date + LF;
+  c += LEFT + BOLD_ON + divider('=') + BOLD_OFF + LF + LF;
+  c += DBL_ON + BOLD_ON + twoCol('CASH', eur(parseFloat(summary.cash_total || 0))) + BOLD_OFF + DBL_OFF + LF;
+  c += DBL_ON + BOLD_ON + twoCol('CARD', eur(parseFloat(summary.card_total || 0))) + BOLD_OFF + DBL_OFF + LF;
+  c += BOLD_ON + divider('=') + BOLD_OFF + LF;
+  c += LF + RIGHT + BIG_ON + BOLD_ON + eur(parseFloat(summary.grand_total || 0)) + BOLD_OFF + BIG_OFF + LF + LEFT + LF;
+  c += CENTER + summary.order_count + ' orders today' + LEFT + LF;
+  c += FEED5 + CUT;
+  return c;
+}
+
+function splitBill(data) {
+  var items = data.items || [];
+  var sub   = parseFloat(data.subtotal || 0);
+  var part  = data.part || 1;
+  var tbl   = data.table_number ? 'Table ' + data.table_number : (data.is_takeaway ? 'Takeaway' : '?');
+  var time  = new Date().toLocaleString('en-GB');
+
+  var c = '';
+  c += INIT;
+  c += CENTER + DBL_ON + BOLD_ON + (S.receipt_name || 'Restaurant') + BOLD_OFF + DBL_OFF + LF;
+  c += CENTER + BOLD_ON + 'SPLIT BILL  PART ' + part + ' / 2' + BOLD_OFF + LF;
+  c += LEFT + BOLD_ON + divider('=') + BOLD_OFF + LF;
+  c += BOLD_ON + tbl + BOLD_OFF + LF;
+  c += time + LF;
+  if (data.waiter_name) { c += 'Waiter: ' + data.waiter_name + LF; }
+  c += BOLD_ON + divider('=') + BOLD_OFF + LF + LF;
+
+  items.forEach(function(item) {
+    var line  = item.quantity + 'x ' + item.product_name;
+    var price = eur(parseFloat(item.product_price) * item.quantity);
+    c += BOLD_ON + twoCol(line, price) + BOLD_OFF + LF;
+    if (item.notes) { c += '   -> ' + item.notes + LF; }
+  });
+
+  c += LF + BOLD_ON + divider('-') + BOLD_OFF + LF;
+  c += LF + RIGHT + MED_ON + BOLD_ON + 'PART ' + part + '  ' + eur(sub) + BOLD_OFF + MED_OFF + LF + LEFT;
+  if (S.receipt_footer) { c += LF + CENTER + S.receipt_footer + LEFT + LF; }
+  c += FEED5 + CUT;
+  return c;
+}
+
+function testTicket() {
+  var c = '';
+  c += INIT;
+  c += CENTER + DBL_ON + BOLD_ON + 'MESA POS' + BOLD_OFF + DBL_OFF + LF;
+  c += CENTER + BOLD_ON + 'PRINT SERVER TEST' + BOLD_OFF + LF;
+  c += LEFT + BOLD_ON + divider('=') + BOLD_OFF + LF;
+  c += 'Printer: ' + (printerName || '(not set)') + LF;
+  c += 'Time:    ' + new Date().toLocaleString('en-GB') + LF;
+  c += BOLD_ON + divider('-') + BOLD_OFF + LF;
+  c += 'Normal text' + LF;
+  c += BOLD_ON + 'Bold text' + BOLD_OFF + LF;
+  c += DBL_ON + BOLD_ON + 'Double size' + BOLD_OFF + DBL_OFF + LF;
+  c += INV_ON + ' Inverted block ' + INV_OFF + LF;
+  c += BOLD_ON + divider('-') + BOLD_OFF + LF;
+  c += 'Euro test: ' + eur(12.50) + LF;
+  c += BOLD_ON + divider('=') + BOLD_OFF + LF;
+  c += CENTER + 'Working correctly!' + LEFT + LF;
+  c += FEED5 + CUT;
+  return c;
+}
+
+// ── EURO SIGN HELPER ──────────────────────────────────
+// Most modern thermal printers support the actual euro sign via UTF-8 or CP858
+// We try the actual Unicode € first; if printer shows E, change codepage in settings
+function eur(amount) {
+  return '€' + parseFloat(amount).toFixed(2);
+}
+
+// ── CORE SILENT PRINT ─────────────────────────────────
+async function silentPrint(escpos, overridePrinter) {
+  var pName = overridePrinter || printerName;
+  if (!qzReady) { log('QZ Tray not connected — click Connect QZ Tray first', 'er'); return false; }
+  if (!pName)   { log('No printer name set — enter it in the field above', 'er'); return false; }
+  try {
+    var config = qz.configs.create(pName, {
+      encoding: null,        // Let QZ handle encoding
+      copies: 1,
+      colorType: 'blackwhite'
+    });
+    // Convert string to bytes array — works on ALL QZ Tray versions (2.0+)
+    var bytes = new Uint8Array(escpos.length);
+    for (var i = 0; i < escpos.length; i++) {
+      bytes[i] = escpos.charCodeAt(i) & 0xFF;
+    }
+    await qz.print(config, [{
+      type: 'raw',
+      format: 'base64',
+      flavor: 'base64',
+      data: btoa(String.fromCharCode.apply(null, bytes))
+    }]);
+    log('Printed to: ' + pName, 'ok');
+    return true;
+  } catch(e) {
+    log('Print error: ' + e.message + ' | Printer: ' + pName, 'er');
+    // Try alternative format
+    try {
+      var config2 = qz.configs.create(pName);
+      var arr = [];
+      for (var j = 0; j < escpos.length; j++) arr.push(escpos.charCodeAt(j));
+      await qz.print(config2, [arr]);
+      log('Printed (fallback mode): ' + pName, 'ok');
+      return true;
+    } catch(e2) {
+      log('Fallback also failed: ' + e2.message, 'er');
+      return false;
+    }
+  }
+}
+
+// ── QZ TRAY ───────────────────────────────────────────
+async function connectQZ() {
+  printerName = document.getElementById('pname').value.trim();
+  if (!printerName) { log('Enter printer name first', 'er'); return; }
+  saveName();
+  setDot('q', 'q', 'a', 'Connecting…');
+  log('Connecting to QZ Tray…');
+  try {
+    // Certificate bypass — after first Allow+Remember click, never shows again
+    if (typeof qz.security !== 'undefined') {
+      qz.security.setCertificatePromise(function(resolve) { resolve(''); });
+      qz.security.setSignaturePromise(function(toSign) {
+        return function(resolve) { resolve(''); };
+      });
+    }
+
+    await qz.websocket.connect({ retries: 3, delay: 500 });
+    qzReady = true;
+    setDot('q', 'q', 'g', 'Connected');
+    log('QZ Tray connected', 'ok');
+
+    // Find the printer
+    var printers = await qz.printers.find();
+    log('Found ' + printers.length + ' printers in Windows', 'in');
+
+    var match = printers.find(function(p) {
+      return p.toLowerCase().includes(printerName.toLowerCase());
+    });
+
+    if (match) {
+      printerName = match;
+      document.getElementById('pname').value = match;
+      localStorage.setItem('mesa_printer', match);
+      setDot('p', 'p', 'g', match);
+      log('Printer ready: ' + match, 'ok');
+      log('All printing is now silent and automatic', 'ok');
+    } else {
+      setDot('p', 'p', 'r', 'NOT FOUND in Windows');
+      log('Printer "' + printerName + '" not found!', 'er');
+      log('Click "List All Printers" to see exact names', 'wn');
+    }
+  } catch(e) {
+    qzReady = false;
+    setDot('q', 'q', 'r', 'Failed — QZ Tray not running?');
+    log('Connection failed: ' + e.message, 'er');
+    log('Make sure QZ Tray is installed and running (check system tray bottom right)', 'wn');
+    log('Download free from qz.io if not installed', 'wn');
+  }
+}
+
+async function disconnectQZ() {
+  try { await qz.websocket.disconnect(); } catch(e) {}
+  qzReady = false;
+  setDot('q', 'q', 'r', 'Disconnected');
+  setDot('p', 'p', 'r', '—');
+  log('Disconnected from QZ Tray', 'wn');
+}
+
+async function listPrinters() {
+  if (!qzReady) { log('Connect QZ Tray first', 'er'); return; }
+  try {
+    var printers = await qz.printers.find();
+    log('=== PRINTERS IN WINDOWS ===', 'in');
+    printers.forEach(function(p) { log('  >> ' + p, 'wn'); });
+    log('Copy the exact name you want into the field above', 'in');
+  } catch(e) { log('Error: ' + e.message, 'er'); }
+}
+
+async function testPrint() {
+  if (!qzReady) { log('Connect QZ Tray first', 'er'); return; }
+  log('Sending test print…');
+  var ok = await silentPrint(testTicket());
+  if (ok) log('Test print sent — paper should print now with text!', 'ok');
+}
+
+// ── SOCKET ────────────────────────────────────────────
+function connectSocket() {
+  socket = io();
+
+  socket.on('connect', function() {
+    setDot('s', 's', 'g', 'Connected');
+    log('MESA server connected', 'ok');
+    socket.emit('join_kitchen');
+    socket.emit('join_bar');
+    log('Listening for kitchen + bar orders', 'in');
+  });
+
+  socket.on('disconnect', function() {
+    setDot('s', 's', 'r', 'Disconnected — reconnecting…');
+    log('Lost server connection — will auto-reconnect', 'er');
+  });
+
+  // Kitchen or bar ticket
+  socket.on('new_ticket', async function(data) {
+    var dest = data.destination || 'kitchen';
+    log('NEW ' + dest.toUpperCase() + ' ticket #' + data.ticket_num + ' — Table ' + (data.table_number || 'TA'), 'ok');
+    var pName = dest === 'bar' ? getPrinterFor('bar') : getPrinterFor('kitchen');
+    var ok = await silentPrint(kitchenTicket(data), pName);
+    if (ok) {
+      if (dest === 'bar') { cb++; document.getElementById('cb').textContent = cb; }
+      else { ck++; document.getElementById('ck').textContent = ck; }
+      log('Printed ' + dest + ' ticket #' + data.ticket_num, 'ok');
+    }
+  });
+
+  // Cancellation
+  socket.on('cancellation_ticket', async function(data) {
+    var dest = data.destination || 'kitchen';
+    log('CANCEL — ' + (data.item && data.item.product_name || '?') + ' — Table ' + (data.table_number || 'TA'), 'wn');
+    var pName = dest === 'bar' ? getPrinterFor('bar') : getPrinterFor('kitchen');
+    var ok = await silentPrint(cancelTicket(data), pName);
+    if (ok) log('Cancellation ticket printed', 'ok');
+  });
+
+  // Daily revenue print
+  socket.on('print_revenue', async function(data) {
+    log('Printing daily revenue…', 'in');
+    var pName = S.printer_3_name || S.printer_1_name || printerName;
+    var ok = await silentPrint(revenue(data.summary), pName);
+    if (ok) log('Revenue report printed', 'ok');
+  });
+
+  // Split bill — frontend emits this directly
+  socket.on('print_split_request', async function(data) {
+    log('Split bill Part ' + data.part + ' — Table ' + (data.table_number || 'TA'), 'in');
+    var pName = getPrinterFor('receipt');
+    var ok = await silentPrint(splitBill(data), pName);
+    if (ok) { cr++; document.getElementById('cr').textContent = cr; log('Split bill Part ' + data.part + ' printed', 'ok'); }
+  });
+
+  // Receipt request — frontend asks printserver to print via server relay
+  socket.on('print_receipt', async function(data) {
+    log('RECEIPT — Table ' + (data.order && data.order.table_number || 'TA'), 'in');
+    var pName = getPrinterFor('receipt');
+    var ok = await silentPrint(receipt(data.order), pName);
+    if (ok) { cr++; document.getElementById('cr').textContent = cr; log('Receipt printed', 'ok'); }
+  });
+}
+
+// ── LOAD SETTINGS + INIT ──────────────────────────────
+async function loadSettings() {
+  try {
+    var r = await fetch('/api/settings');
+    if (r.ok) {
+      S = await r.json();
+      if (S.printer_1_name && !printerName) {
+        printerName = S.printer_1_name;
+        document.getElementById('pname').value = printerName;
+      }
+      log('Settings loaded from server', 'in');
+    }
+  } catch(e) { log('Could not load settings', 'wn'); }
+}
+
+window.addEventListener('load', async function() {
+  await loadSettings();
+  loadSlots();
+  connectSocket();
+  log('Print server ready — click Connect QZ Tray', 'in');
+});
+</script>
+
+</body>
+</html>
