@@ -1,0 +1,1664 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>MESA POS</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden;font-family:system-ui,-apple-system,'Segoe UI',sans-serif;background:#f1f5f9;color:#0f172a}
+button,input,select,textarea{font-family:inherit}
+button{cursor:pointer;border:none;outline:none}
+input,select,textarea{outline:none}
+:root{
+  --bg:#f1f5f9;--c:#fff;--b1:#e2e8f0;--b2:#cbd5e1;
+  --t1:#0f172a;--t2:#475569;--t3:#94a3b8;--t4:#e2e8f0;
+  --bl:#2563eb;--bll:#eff6ff;--blb:#bfdbfe;
+  --gr:#16a34a;--grl:#f0fdf4;--grb:#bbf7d0;
+  --rd:#dc2626;--rdl:#fef2f2;--rdb:#fecaca;
+  --am:#d97706;--aml:#fffbeb;--amb:#fde68a;
+  --nv:#0f172a;--nv2:#1e293b;--nv3:#334155;--nv4:#475569;
+  --sh:0 1px 3px rgba(0,0,0,.06);--shm:0 4px 12px rgba(0,0,0,.1);--shl:0 8px 24px rgba(0,0,0,.14);
+}
+::-webkit-scrollbar{width:4px;height:4px}::-webkit-scrollbar-thumb{background:var(--b2);border-radius:2px}
+
+/* LOGIN */
+#login{position:fixed;inset:0;background:var(–nv);display:flex;align-items:center;justify-content:center;z-index:9999}
+#login.off{display:none}
+.lb{background:var(–c);border-radius:20px;padding:36px;width:340px;display:flex;flex-direction:column;align-items:center;gap:18px;box-shadow:var(–shl)}
+.lb h1{font-size:26px;font-weight:900;letter-spacing:-1px;color:var(–t1)}
+.lb h1 b{color:var(–bl)}
+.lb-s{font-size:11px;color:var(–t3);text-transform:uppercase;letter-spacing:.6px;margin-top:-12px}
+.ldots{display:flex;gap:9px}
+.ld{width:12px;height:12px;border-radius:50%;background:var(–b1);border:2px solid var(–b2);transition:all .15s}
+.ld.on{background:var(–bl);border-color:var(–bl);transform:scale(1.2)}
+.np{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;width:100%}
+.nk{height:62px;border-radius:9px;border:1.5px solid var(–b2);background:var(–bg);color:var(–t1);font-size:21px;font-weight:700;transition:transform .1s,background .1s;touch-action:manipulation}
+.nk:active{transform:scale(.86);background:var(–b2)}
+.nk.del{color:var(–rd);font-size:12px;font-weight:600}
+.nk.go{background:var(–bl);color:#fff;border-color:var(–bl);font-size:15px;font-weight:700}
+.nk.go:active{background:#1d4ed8}
+.le{font-size:12px;color:var(–rd);font-weight:600;min-height:16px;text-align:center}
+
+/* APP */
+#app{display:none;height:100%;flex-direction:column}
+#app.on{display:flex}
+.tb{height:44px;background:var(–nv);display:flex;align-items:center;padding:0 12px;gap:8px;flex-shrink:0}
+.tb-logo{font-size:14px;font-weight:800;color:#f1f5f9}
+.tb-logo b{color:#60a5fa}
+.tb-sep{width:1px;height:14px;background:var(–nv3)}
+.tb-av{width:24px;height:24px;border-radius:5px;background:var(–bl);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;flex-shrink:0}
+.tb-name{font-size:13px;font-weight:600;color:#e2e8f0}
+.tb-role{font-size:9px;font-weight:700;text-transform:uppercase;padding:2px 6px;border-radius:3px;background:var(–nv3);color:#64748b}
+.tb-clock{font-size:18px;font-weight:800;color:#f1f5f9;font-variant-numeric:tabular-nums;letter-spacing:-.4px}
+.tb-date{font-size:12px;font-weight:700;color:#94a3b8;letter-spacing:-.2px}
+.tb-btns{display:flex;gap:4px;margin-left:auto}
+.tbb{height:26px;padding:0 10px;border-radius:5px;border:1px solid var(–nv3);background:var(–nv3);color:#cbd5e1;font-size:11px;font-weight:600;transition:all .1s;touch-action:manipulation}
+.tbb:active{transform:scale(.92)}
+.tbb.red{background:#7f1d1d;border-color:var(–rd);color:#fca5a5}
+.tbb.am{background:#451a03;border-color:var(–am);color:#fcd34d}
+.view{display:none;flex:1;overflow:hidden}
+.view.on{display:flex;flex-direction:column}
+
+/* HOME */
+.hl{display:flex;flex:1;overflow:hidden}
+.hsb{width:88px;background:var(–nv);display:flex;flex-direction:column;padding:7px;gap:4px;flex-shrink:0}
+.hb{min-height:46px;border-radius:6px;border:1.5px solid transparent;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:9px;font-weight:700;color:#64748b;background:transparent;transition:all .12s;text-transform:uppercase;touch-action:manipulation}
+.hb:active{transform:scale(.93)}
+.hb.on{background:var(–bl);color:#fff;border-color:#3b82f6}
+.hb-n{font-size:18px;font-weight:900;line-height:1;color:inherit}
+.hsep{height:1px;background:var(–nv3);margin:2px 3px}
+.hta{min-height:40px;border-radius:6px;border:1.5px solid var(–nv3);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;font-size:9px;font-weight:700;background:var(–nv3);color:#64748b;text-transform:uppercase;padding:3px 2px;line-height:1.3;touch-action:manipulation}
+.hta.g{background:#14532d;border-color:var(–gr);color:#86efac}
+.hga{flex:1;overflow-y:auto;padding:9px}
+.tgrid{display:grid;gap:8px;grid-template-columns:repeat(var(–c,8),1fr);align-content:start}
+.tc{width:100%;aspect-ratio:1;border-radius:10px;border:2px solid transparent;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;transition:all .13s;position:relative;user-select:none;box-shadow:0 2px 8px rgba(0,0,0,.08);touch-action:manipulation}
+.tc.empty{background:#f0fdf4;border-color:#86efac;box-shadow:0 2px 8px rgba(22,163,74,.1)}
+.tc.occupied{background:#fff1f2;border-color:#f87171;box-shadow:0 2px 8px rgba(220,38,38,.12)}
+.tc.bill_requested{background:#eff6ff;border-color:#93c5fd;box-shadow:0 2px 8px rgba(37,99,235,.1)}
+.tc.draft{background:#fffbeb;border-color:#fde68a}
+.tc.draft .tc-n{color:#92400e}
+.tc.draft .tc-dot{background:#f59e0b}
+.tc.draft .tc-l{color:#92400e}
+.tc:active{transform:scale(.88)}
+.tc-n{font-size:18px;font-weight:900;line-height:1;color:#0f172a!important}
+.tc.occupied .tc-n{color:#0f172a}
+.tc.bill_requested .tc-n{color:#0f172a}
+.tc-l{font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:.3px;margin-top:2px;color:#64748b}
+.tc-dot{position:absolute;top:5px;right:5px;width:6px;height:6px;border-radius:50%}
+.tc.empty .tc-dot{background:#16a34a}
+.tc.occupied .tc-dot{background:var(–rd)}
+.tc.bill_requested .tc-dot{background:var(–bl)}
+/* pulse removed */
+
+/* ORDER */
+.oss{display:flex;flex:1;overflow:hidden}
+.olp{width:248px;background:var(–c);border-right:1px solid var(–b1);display:flex;flex-direction:column;flex-shrink:0}
+.oph{padding:9px 11px;background:var(–nv);color:#f1f5f9;flex-shrink:0}
+.opt{font-size:22px;font-weight:900;letter-spacing:-0.5px}
+.opm{font-size:12px;color:#94a3b8;margin-top:2px;font-weight:500}
+.opstag{font-size:9px;font-weight:700;text-transform:uppercase;padding:2px 7px;border-radius:3px;display:inline-block;margin-top:3px;background:var(–nv3);color:#64748b}
+.opstag.bill{background:#1e3a5f;color:#93c5fd}
+.opb{flex:1;overflow-y:auto;padding:5px}
+.opempty{height:100%;display:flex;align-items:center;justify-content:center;color:var(–t4);font-size:13px;font-weight:600}
+.osec{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(–t3);padding:5px 4px 2px}
+.oli{background:var(–bg);border:1px solid var(–b1);border-radius:6px;padding:6px 8px;margin-bottom:3px}
+.oli.sent{opacity:.52}
+.olitop{display:flex;align-items:flex-start;gap:5px}
+.olin{flex:1;font-size:12px;font-weight:700;line-height:1.3}
+.olip{font-size:12px;font-weight:700;color:var(–bl);flex-shrink:0}
+.olix{width:15px;height:15px;border-radius:3px;background:transparent;color:var(–t4);font-size:10px;display:flex;align-items:center;justify-content:center;transition:all .1s;touch-action:manipulation}
+.olix:hover{background:var(–rdl);color:var(–rd)}
+.olinote{font-size:9px;color:var(–t3);font-style:italic;margin-top:2px;border-top:1px solid var(–b1);padding-top:2px}
+.olistag{font-size:8px;font-weight:700;color:var(–gr);background:var(–grl);border:1px solid var(–grb);padding:1px 5px;border-radius:3px;display:inline-block;margin-top:2px}
+.oliqty{display:flex;align-items:center;gap:3px;margin-top:4px}
+.oqb{width:19px;height:19px;border-radius:4px;border:1px solid var(–b2);background:var(–c);color:var(–t2);font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;touch-action:manipulation}
+.oqb:active{transform:scale(.8)}
+.oqn{font-size:11px;font-weight:700;min-width:17px;text-align:center}
+.olirm{margin-left:auto;padding:1px 6px;border-radius:3px;border:1px solid var(–rdb);background:var(–rdl);color:var(–rd);font-size:9px;font-weight:700;touch-action:manipulation}
+.disc-badge{font-size:10px;font-weight:700;color:var(–gr);background:var(–grl);border:1px solid var(–grb);padding:2px 8px;border-radius:4px;margin:4px 4px 0;display:flex;justify-content:space-between}
+.opf{padding:8px;border-top:1px solid var(–b1);background:var(–bg);flex-shrink:0}
+.totrow{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px}
+.totlbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(–t3)}
+.totamt{font-size:24px;font-weight:900;color:var(–bl)}
+.actg{display:grid;grid-template-columns:1fr 1fr;gap:4px}
+.ab{height:44px;border-radius:8px;font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center;transition:all .1s;border:none;touch-action:manipulation}
+.ab:active{transform:scale(.94)}
+.ab.send{background:var(–bl);color:#fff;grid-column:1/-1}
+.ab.bill{background:var(–gr);color:#fff}
+.ab.bill.pm{background:var(–bl)}
+.ab.disc{background:var(–aml);border:1.5px solid var(–amb)!important;color:var(–am)}
+.ab.split{background:var(–grl);border:1.5px solid var(–grb)!important;color:var(–gr)}
+.ab.clr{background:var(–rdl);border:1.5px solid var(–rdb)!important;color:var(–rd)}
+.ab.back{background:var(–bg);border:1.5px solid var(–b2)!important;color:var(–t2)}
+
+/* MENU CENTER */
+.occ{flex:1;display:flex;flex-direction:column;overflow:hidden;background:var(–bg)}
+.catbar{background:var(–nv);display:flex;align-items:stretch;overflow-x:auto;flex-shrink:0;height:44px;scrollbar-width:none}
+.catbar::-webkit-scrollbar{display:none}
+.ctab{flex-shrink:0;min-width:68px;padding:0 11px;height:44px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#64748b;cursor:pointer;white-space:nowrap;transition:all .1s;border-bottom:3px solid transparent;border-top:none;border-left:none;border-right:none;background:transparent;touch-action:manipulation}
+.ctab.on{color:#fff;border-bottom-color:var(–cc,#3b82f6)}
+.subbar{background:var(–nv3);display:flex;align-items:center;gap:4px;padding:5px 8px;overflow-x:auto;flex-shrink:0;scrollbar-width:none;min-height:38px}
+.subbar::-webkit-scrollbar{display:none}
+.schip{flex-shrink:0;height:24px;padding:0 10px;border-radius:4px;border:1px solid var(–nv4);background:#334155;color:#94a3b8;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;touch-action:manipulation}
+.schip.on{background:var(–bl);border-color:var(–bl);color:#fff}
+.schip:active{transform:scale(.9)}
+.parea{flex:1;overflow-y:auto;padding:8px}
+.pgrid{display:grid;grid-template-columns:repeat(var(–p,5),1fr);gap:6px;align-content:start}
+.ptile{height:76px;border-radius:8px;cursor:pointer;transition:all .1s;display:flex;flex-direction:column;justify-content:flex-end;padding:7px 8px;position:relative;overflow:hidden;box-shadow:var(–sh);border:none;touch-action:manipulation}
+.ptile::after{content:’’;position:absolute;inset:0;background:linear-gradient(180deg,transparent 20%,rgba(0,0,0,.48) 100%)}
+.ptile:active{transform:scale(.91)}
+.pt-n{font-size:12px;font-weight:800;color:#fff;line-height:1.2;position:relative;z-index:1;text-shadow:0 1px 3px rgba(0,0,0,.7)}
+.pt-p{font-size:13px;font-weight:900;color:rgba(255,255,255,.92);position:relative;z-index:1;margin-top:1px}
+
+/* ADMIN */
+.adw{display:flex;flex-direction:column;flex:1;overflow:hidden}
+.adtabs{display:flex;background:var(–nv);flex-shrink:0;overflow-x:auto;scrollbar-width:none;padding:0 10px}
+.adtabs::-webkit-scrollbar{display:none}
+.adt{flex-shrink:0;padding:0 14px;height:42px;display:flex;align-items:center;font-size:12px;font-weight:700;color:#64748b;cursor:pointer;border-bottom:3px solid transparent;transition:all .1s;white-space:nowrap;background:transparent;border-top:none;border-left:none;border-right:none;touch-action:manipulation}
+.adt.on{color:#60a5fa;border-bottom-color:#60a5fa}
+.adbd{flex:1;overflow-y:auto;padding:14px;background:var(–bg)}
+.asec{display:none}.asec.on{display:block}
+.ash{font-size:14px;font-weight:800;margin-bottom:12px}
+.a2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.ac{background:var(–c);border:1px solid var(–b1);border-radius:9px;padding:14px;box-shadow:var(–sh)}
+.aclbl{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(–t3);margin-bottom:10px}
+.af{display:flex;flex-direction:column;gap:3px;margin-bottom:7px}
+.af label{font-size:10px;font-weight:600;color:var(–t2);text-transform:uppercase;letter-spacing:.4px}
+.af input,.af select,.af textarea{background:var(–bg);border:1.5px solid var(–b2);border-radius:6px;color:var(–t1);padding:7px 10px;font-size:13px;font-weight:500;width:100%}
+.af input:focus,.af select:focus{border-color:var(–bl);background:var(–c)}
+.af textarea{resize:vertical;min-height:50px}
+.afg{display:grid;gap:7px}
+.arow{background:var(–bg);border:1px solid var(–b1);border-radius:6px;padding:7px 10px;display:flex;align-items:center;gap:7px;margin-bottom:4px}
+.ar-m{flex:1;font-size:12px;font-weight:600}
+.ar-s{font-size:11px;color:var(–t3)}
+.ar-a{display:flex;gap:3px}
+/* PRODUCTS in admin - category filter */
+.prod-filter{background:var(–bll);border:1px solid var(–blb);border-radius:6px;padding:8px 10px;margin-bottom:8px;font-size:12px;font-weight:600;color:var(–bl)}
+/* ORDERS TABLE */
+.atbl{width:100%;border-collapse:collapse}
+.atbl th{text-align:left;padding:7px 9px;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(–t3);border-bottom:2px solid var(–b1);background:var(–bg)}
+.atbl td{padding:8px 9px;border-bottom:1px solid var(–b1);font-size:11px;color:var(–t2)}
+.atbl tr:hover td{background:var(–bg)}
+.abg{display:inline-flex;padding:2px 6px;border-radius:3px;font-size:9px;font-weight:700;text-transform:uppercase}
+.abg.open{background:var(–aml);color:var(–am);border:1px solid var(–amb)}
+.abg.closed{background:var(–grl);color:var(–gr);border:1px solid var(–grb)}
+.abg.bill_requested{background:var(–bll);color:var(–bl);border:1px solid var(–blb)}
+.abg.cash{background:var(–grl);color:var(–gr);border:1px solid var(–grb)}
+.abg.card{background:var(–bll);color:var(–bl);border:1px solid var(–blb)}
+/* ORDER FILTERS */
+.ofilters{display:flex;gap:6px;flex-wrap:wrap;align-items:flex-end;margin-bottom:10px}
+.ofilters .af{margin:0;min-width:100px}
+/* REPORTS */
+.s4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:12px}
+.stat{background:var(–c);border:1px solid var(–b1);border-radius:8px;padding:12px}
+.stat-l{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(–t3);margin-bottom:4px}
+.stat-v{font-size:22px;font-weight:800}
+.stat-s{font-size:11px;color:var(–t3);margin-top:2px}
+.perrow{display:flex;gap:5px;margin-bottom:10px}
+.pbtn{height:26px;padding:0 12px;border-radius:18px;border:1.5px solid var(–b2);background:var(–c);color:var(–t2);font-size:12px;font-weight:700;cursor:pointer;touch-action:manipulation}
+.pbtn.on{background:var(–bl);border-color:var(–bl);color:#fff}
+.drow{background:var(–c);border:1px solid var(–b1);border-radius:6px;padding:8px 10px;display:flex;align-items:center;gap:8px;margin-bottom:4px}
+.tpr{background:var(–c);border:1px solid var(–b1);border-radius:6px;padding:7px 10px;display:flex;align-items:center;gap:8px;margin-bottom:3px}
+.tpr-rk{width:18px;height:18px;border-radius:50%;background:var(–bg);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:var(–t3);flex-shrink:0}
+/* PRINTER SLOTS */
+.pslot{background:var(–c);border:1.5px solid var(–b1);border-radius:9px;padding:12px;margin-bottom:8px}
+.pslot.cfg{border-color:var(–blb);background:var(–bll)}
+.psh{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.psn{width:22px;height:22px;border-radius:50%;background:var(–bl);color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;flex-shrink:0}
+.pst{font-size:12px;font-weight:700;flex:1}
+.pss{font-size:10px;font-weight:600;padding:2px 7px;border-radius:8px;background:var(–bg);color:var(–t3)}
+.pss.ok{background:var(–grl);color:var(–gr);border:1px solid var(–grb)}
+.psg{display:grid;grid-template-columns:1.4fr 1fr 1fr auto;gap:6px;align-items:end}
+/* GUIDE */
+.guide{background:var(–aml);border:1.5px solid var(–amb);border-radius:9px;padding:13px;margin-bottom:12px}
+.guide h4{font-size:12px;font-weight:700;color:var(–am);margin-bottom:8px}
+.gs{display:flex;gap:7px;align-items:flex-start;margin-bottom:5px}
+.gsn{width:18px;height:18px;border-radius:50%;background:var(–am);color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.gs p{font-size:11px;color:var(–t2);line-height:1.6}
+.gs code{background:var(–amb);padding:1px 4px;border-radius:3px;font-family:monospace;font-size:10px}
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:4px;height:28px;padding:0 11px;border-radius:5px;border:1.5px solid var(–b2);background:var(–c);color:var(–t2);font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;touch-action:manipulation}
+.btn:active{transform:scale(.92)}
+.btn.blue{background:var(–bl);border-color:var(–bl);color:#fff}
+.btn.green{background:var(–gr);border-color:var(–gr);color:#fff}
+.btn.red{background:var(–rdl);border-color:var(–rdb);color:var(–rd)}
+.btn.sm{height:24px;padding:0 8px;font-size:10px}
+/* MODALS */
+.ov{display:none;position:fixed;inset:0;background:rgba(15,23,42,.58);align-items:center;justify-content:center;z-index:800;backdrop-filter:blur(2px)}
+.ov.on{display:flex}
+.modal{background:var(–c);border-radius:13px;padding:20px;box-shadow:var(–shl);border:1px solid var(–b1)}
+.modal.sm{width:92%;max-width:390px}
+.modal.md{width:92%;max-width:490px}
+.modal.lg{width:92%;max-width:600px}
+.modal h3{font-size:15px;font-weight:800;margin-bottom:12px}
+.mf{display:flex;gap:6px;justify-content:flex-end;margin-top:12px}
+.rcpt{background:var(–bg);border:1px solid var(–b1);border-radius:6px;padding:12px;font-size:12px;line-height:1.8;max-height:300px;overflow-y:auto}
+.rc{text-align:center}.rb{font-weight:700}
+.rrow{display:flex;justify-content:space-between}
+.rdiv{border:none;border-top:1px dashed var(–b2);margin:5px 0}
+.pg{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:9px}
+.popt{height:82px;border-radius:9px;border:2px solid var(–b2);background:var(–bg);cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;touch-action:manipulation}
+.popt:active{transform:scale(.93)}
+.popt.sel{border-color:var(–bl);background:var(–bll)}
+.pl{font-size:15px;font-weight:800}
+.ps{font-size:11px;color:var(–t3)}
+.ppc{background:var(–bg);border:1px solid var(–b1);border-radius:7px;padding:10px 11px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center}
+.ppn{font-size:14px;font-weight:800}
+.ppd{font-size:11px;color:var(–t3);margin-top:2px}
+.ppp{font-size:15px;font-weight:900;color:var(–bl);flex-shrink:0;margin-left:10px}
+.qrow{display:flex;align-items:center;gap:12px;margin-bottom:11px}
+.qrow label{font-size:12px;font-weight:600;color:var(–t2)}
+.pqc{display:flex;align-items:center;gap:9px}
+.pqb{width:30px;height:30px;border-radius:6px;border:1.5px solid var(–b2);background:var(–c);color:var(–t1);font-size:16px;font-weight:700;display:flex;align-items:center;justify-content:center;touch-action:manipulation}
+.pqb:active{transform:scale(.84)}
+.pqn{font-size:17px;font-weight:800;min-width:25px;text-align:center}
+/* PIN LOCK */
+.plkp{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;width:230px;margin:11px auto 0}
+.plk{height:50px;border-radius:8px;border:1.5px solid var(–b2);background:var(–bg);color:var(–t1);font-size:20px;font-weight:700;cursor:pointer;touch-action:manipulation}
+.plk:active{transform:scale(.88)}
+.plk.del{color:var(–rd);font-size:11px}
+.plk.go{background:var(–bl);border-color:var(–bl);color:#fff;font-size:14px}
+.pl-err{font-size:11px;color:var(–rd);font-weight:600;min-height:14px;text-align:center;margin-top:7px}
+/* SUMMARY */
+.sg{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+.sbox{border-radius:9px;padding:14px}
+.sbox.cash{background:var(–grl);border:2px solid var(–grb)}
+.sbox.card{background:var(–bll);border:2px solid var(–blb)}
+.sbox.total{background:var(–nv);border:none;grid-column:1/-1}
+.sbl{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;margin-bottom:4px}
+.sbox.cash .sbl{color:var(–gr)}.sbox.card .sbl{color:var(–bl)}.sbox.total .sbl{color:#64748b}
+.sbv{font-size:24px;font-weight:900}
+.sbox.cash .sbv{color:var(–gr)}.sbox.card .sbv{color:var(–bl)}.sbox.total .sbv{color:#fff}
+.sbsub{font-size:11px;margin-top:2px;color:#64748b}
+/* DISCOUNT MODAL */
+.dopts{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:10px}
+.dopt{padding:11px;border-radius:7px;border:2px solid var(–b2);background:var(–bg);cursor:pointer;text-align:center;touch-action:manipulation}
+.dopt:active{transform:scale(.94)}
+.dopt.sel{border-color:var(–bl);background:var(–bll)}
+.dopt-l{font-size:13px;font-weight:700}
+.dopt-s{font-size:11px;color:var(–t3);margin-top:2px}
+/* CUSTOM CONFIRM */
+.conf-icon{font-size:28px;text-align:center;margin-bottom:6px}
+.conf-msg{font-size:13px;color:var(–t2);line-height:1.6}
+/* TOASTS */
+.toasts{position:fixed;bottom:12px;right:12px;display:flex;flex-direction:column;gap:4px;z-index:9999}
+.toast{background:var(–c);border:1.5px solid var(–b2);border-radius:7px;padding:8px 12px;font-size:12px;font-weight:600;max-width:260px;box-shadow:var(–shm);animation:tin .18s ease}
+.toast.ok{border-color:var(–grb);color:var(–gr);background:var(–grl)}
+.toast.err{border-color:var(–rdb);color:var(–rd);background:var(–rdl)}
+.toast.info{border-color:var(–blb);color:var(–bl);background:var(–bll)}
+.toast.warn{border-color:var(–amb);color:var(–am);background:var(–aml)}
+@keyframes tin{from{opacity:0;transform:translateX(18px)}to{opacity:1;transform:translateX(0)}}
+@media print{body>*{display:none!important}#pz{display:block!important;color:#000;background:#fff}}
+#pz{display:none}
+@media(max-width:1100px){.tgrid{–c:7}}@media(max-width:860px){.olp{width:220px}.pgrid{–p:3}.tgrid{–c:5}}@media(max-width:640px){.olp{width:100%;max-height:200px;border-right:none;border-bottom:1px solid var(–b1)}.pgrid{–p:3}.tgrid{–c:4}}
+@media(max-width:640px){.hsb{width:80px}.oss{flex-direction:column}}
+</style>
+
+</head>
+<body>
+<!-- LOGIN -->
+<div id="login">
+  <div class="lb">
+    <h1>MESA <b>POS</b></h1>
+    <div class="lb-s">Restaurant System</div>
+    <div class="ldots">
+      <div class="ld" id="pd0"></div><div class="ld" id="pd1"></div><div class="ld" id="pd2"></div>
+      <div class="ld" id="pd3"></div><div class="ld" id="pd4"></div><div class="ld" id="pd5"></div>
+    </div>
+    <div class="np">
+      <button class="nk" ontouchstart="kpT('1')" onclick="kpT('1')">1</button>
+      <button class="nk" ontouchstart="kpT('2')" onclick="kpT('2')">2</button>
+      <button class="nk" ontouchstart="kpT('3')" onclick="kpT('3')">3</button>
+      <button class="nk" ontouchstart="kpT('4')" onclick="kpT('4')">4</button>
+      <button class="nk" ontouchstart="kpT('5')" onclick="kpT('5')">5</button>
+      <button class="nk" ontouchstart="kpT('6')" onclick="kpT('6')">6</button>
+      <button class="nk" ontouchstart="kpT('7')" onclick="kpT('7')">7</button>
+      <button class="nk" ontouchstart="kpT('8')" onclick="kpT('8')">8</button>
+      <button class="nk" ontouchstart="kpT('9')" onclick="kpT('9')">9</button>
+      <button class="nk del" ontouchstart="kdT()" onclick="kdT()">DEL</button>
+      <button class="nk" ontouchstart="kpT('0')" onclick="kpT('0')">0</button>
+      <button class="nk go" ontouchstart="kgoT()" onclick="kgoT()">OK</button>
+    </div>
+    <div class="le" id="le"></div>
+  </div>
+</div>
+
+<!-- APP -->
+
+<div id="app">
+  <div class="tb">
+    <div class="tb-logo">MESA <b>POS</b></div>
+    <div class="tb-sep"></div>
+    <span class="tb-name" id="tb-name" style="font-size:13px;font-weight:700;color:#e2e8f0">-</span>
+    <span class="tb-role" id="tb-role">waiter</span>
+    <div class="tb-clock" id="tb-clock">00:00</div>
+    <div class="tb-date" id="tb-date"></div>
+    <div class="tb-btns">
+      <button class="tbb am" id="btn-sum" onclick="openSum()" style="display:none">Revenue</button>
+      <button class="tbb" id="btn-adm" onclick="showAdmin()" style="display:none">Admin</button>
+      <button class="tbb" id="btn-home" onclick="showHome()" style="display:none">Tables</button>
+      <button class="tbb red" onclick="doLogout()">Sign Out</button>
+    </div>
+  </div>
+
+  <!-- HOME -->
+
+  <div class="view on" id="view-home">
+    <div class="hl">
+      <div class="hsb">
+        <button class="hb on" onclick="filt('all',this)"><span class="hb-n" id="hn-all">0</span>All</button>
+        <button class="hb" onclick="filt('empty',this)"><span class="hb-n" id="hn-emp">0</span>Free</button>
+        <button class="hb" onclick="filt('occupied',this)"><span class="hb-n" id="hn-occ">0</span>Busy</button>
+        <button class="hb" onclick="filt('bill_requested',this)"><span class="hb-n" id="hn-bill">0</span>Bill</button>
+        <div class="hsep"></div>
+        <button class="hta g" id="btn-ta" onclick="startTakeaway()" style="display:none">Take-<br>away</button>
+      </div>
+      <div class="hga"><div class="tgrid" id="tgrid"></div></div>
+    </div>
+  </div>
+
+  <!-- ORDER -->
+
+  <div class="view" id="view-order">
+    <div class="oss">
+      <div class="olp">
+        <div class="oph">
+          <div class="opt" id="ol-title">-</div>
+          <div class="opm" id="ol-meta">-</div>
+          <div class="opstag" id="ol-stag" style="display:none"></div>
+        </div>
+        <div class="opb" id="ol-body"></div>
+        <div class="opf">
+          <div class="totrow"><span class="totlbl">Total</span><span class="totamt" id="tot-amt">€0.00</span></div>
+          <div class="actg">
+            <button class="ab send" onclick="doSend()">Send Order</button>
+            <button class="ab bill" id="btn-bill" onclick="doBill()">Print Bill</button>
+            <button class="ab disc" onclick="openDiscount()">% Discount</button>
+            <button class="ab split" onclick="openSplit()">Split Bill</button>
+            <button class="ab clr" onclick="clearUnsent()">Clear New</button>
+            <button class="ab back" onclick="goHome()">Back</button>
+          </div>
+        </div>
+      </div>
+      <div class="occ">
+        <div class="catbar" id="catbar"></div>
+        <div class="subbar" id="subbar" style="display:none"></div>
+        <div class="parea"><div class="pgrid" id="pgrid"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ADMIN -->
+
+  <div class="view" id="view-admin">
+    <div class="adw">
+      <div class="adtabs">
+        <button class="adt on" onclick="aTab(this,'as-orders')">Orders</button>
+        <button class="adt" onclick="aTab(this,'as-reports')">Reports</button>
+        <button class="adt" onclick="aTab(this,'as-menu')">Menu</button>
+        <button class="adt" onclick="aTab(this,'as-tables')">Tables</button>
+        <button class="adt" onclick="aTab(this,'as-staff')">Staff</button>
+        <button class="adt" onclick="aTab(this,'as-settings')">Settings</button>
+      </div>
+      <div class="adbd">
+
+```
+    <!-- ORDERS -->
+    <div class="asec on" id="as-orders">
+      <div class="ash">All Orders</div>
+      <div class="ofilters">
+        <div class="af"><label>Status</label>
+          <select id="f-status">
+            <option value="all">All</option><option value="open">Open</option>
+            <option value="bill_requested">Bill Req.</option><option value="closed">Closed</option>
+          </select>
+        </div>
+        <div class="af"><label>Table #</label><input id="f-table" placeholder="5" style="width:70px"></div>
+        <div class="af"><label>Waiter</label><input id="f-waiter" placeholder="Name" style="width:100px"></div>
+        <div class="af"><label>From</label><input id="f-from" type="date"></div>
+        <div class="af"><label>To</label><input id="f-to" type="date"></div>
+        <button class="btn blue sm" onclick="loadOrders()">Search</button>
+        <button class="btn sm" onclick="clearOFilters()">Reset</button>
+      </div>
+      <div class="ac" style="padding:0;overflow:hidden">
+        <table class="atbl">
+          <thead><tr><th>ID</th><th>T#</th><th>Table</th><th>Waiter</th><th>Total</th><th>Disc</th><th>Pay</th><th>Status</th><th>Time</th><th></th></tr></thead>
+          <tbody id="ord-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- REPORTS -->
+    <div class="asec" id="as-reports">
+      <div class="ash">Reports</div>
+      <div class="perrow">
+        <button class="pbtn on" onclick="loadRep('today',this)">Today</button>
+        <button class="pbtn" onclick="loadRep('week',this)">Week</button>
+        <button class="pbtn" onclick="loadRep('month',this)">Month</button>
+        <button class="pbtn" onclick="loadRep('year',this)">Year</button>
+      </div>
+      <div class="s4" id="rep-stats"></div>
+      <div class="a2">
+        <div class="ac"><div class="aclbl">Daily Breakdown</div><div id="rep-daily"></div></div>
+        <div class="ac"><div class="aclbl">Top Products</div><div id="rep-prods"></div></div>
+      </div>
+      <div class="a2" style="margin-top:10px">
+        <div class="ac"><div class="aclbl">Cancellations</div><div id="rep-cancel"></div></div>
+        <div class="ac"><div class="aclbl">Discounts</div><div id="rep-disc"></div></div>
+      </div>
+    </div>
+
+    <!-- MENU -->
+    <div class="asec" id="as-menu">
+      <div class="ash">Menu Management</div>
+      <div class="a2" style="margin-bottom:12px">
+        <div class="ac">
+          <div class="aclbl">Categories</div>
+          <div class="afg" style="grid-template-columns:1fr 65px">
+            <div class="af" style="margin:0"><input id="in-cn" placeholder="Category name"></div>
+            <div class="af" style="margin:0"><label>Color</label><input id="in-cc" type="color" value="#2563eb" style="height:34px;padding:2px;width:100%"></div>
+          </div>
+          <button class="btn blue sm" style="margin-top:7px" onclick="addCat()">Add Category</button>
+          <div id="list-cats" style="margin-top:9px"></div>
+        </div>
+        <div class="ac">
+          <div class="aclbl">Subcategories</div>
+          <div class="af"><label>In Category</label><select id="sel-c4s" onchange="onCatSelectAdmin(this.value)"><option value="">— choose —</option></select></div>
+          <div class="af"><input id="in-sn" placeholder="Subcategory name"></div>
+          <button class="btn blue sm" onclick="addSub()">Add Subcategory</button>
+          <div id="list-subs" style="margin-top:9px"></div>
+        </div>
+      </div>
+      <div class="ac">
+        <div class="aclbl">Products — select a category or subcategory to see and manage products</div>
+        <div class="afg" style="grid-template-columns:1.1fr 1.1fr 78px 75px 1fr 95px auto;gap:6px;align-items:end;margin-bottom:10px">
+          <div class="af" style="margin:0"><label>Category</label><select id="sel-c4p" onchange="updSubSel4P()"><option value="">— choose —</option></select></div>
+          <div class="af" style="margin:0"><label>Subcategory (opt)</label><select id="sel-s4p"><option value="">— none —</option></select></div>
+          <div class="af" style="margin:0"><label>Name</label><input id="in-pn" placeholder="Espresso"></div>
+          <div class="af" style="margin:0"><label>Price €</label><input id="in-pp" type="number" step="0.10" min="0" placeholder="2.50"></div>
+          <div class="af" style="margin:0"><label>Description</label><input id="in-pd" placeholder="opt."></div>
+          <div class="af" style="margin:0"><label>Prints To</label><select id="in-ptype"><option value="food">Kitchen</option><option value="drink">Bar</option></select></div>
+          <button class="btn blue" style="height:34px;margin-top:auto" onclick="addProd()">Add</button>
+        </div>
+        <div id="prod-filter-label" class="prod-filter" style="display:none"></div>
+        <div id="list-prods"></div>
+      </div>
+    </div>
+
+    <!-- TABLES -->
+    <div class="asec" id="as-tables">
+      <div class="ash">Tables</div>
+      <div class="ac" style="max-width:280px;margin-bottom:10px">
+        <div class="aclbl">Add Table</div>
+        <div class="af"><label>Number</label><input id="in-tn" type="number" placeholder="61"></div>
+        <button class="btn blue sm" onclick="addTable()">Add Table</button>
+      </div>
+      <div id="list-tables"></div>
+    </div>
+
+    <!-- STAFF -->
+    <div class="asec" id="as-staff">
+      <div class="ash">Staff</div>
+      <div class="a2">
+        <div class="ac">
+          <div class="aclbl">Add Staff</div>
+          <div class="af"><label>Full Name</label><input id="in-stname" placeholder="Maria"></div>
+          <div class="af"><label>PIN (4–6 digits)</label><input id="in-stpin" placeholder="1234" maxlength="6"></div>
+          <div class="af"><label>Role</label><select id="in-strole"><option value="waiter">Waiter</option><option value="admin">Admin</option></select></div>
+          <button class="btn blue sm" onclick="addStaff()">Add Staff</button>
+        </div>
+        <div class="ac"><div class="aclbl">Current Staff</div><div id="list-staff"></div></div>
+      </div>
+    </div>
+
+    <!-- SETTINGS -->
+    <div class="asec" id="as-settings">
+      <div class="ash">Settings</div>
+      <div class="guide">
+        <h4>📠 USB Thermal Printer Setup</h4>
+        <div class="gs"><div class="gsn">1</div><p>Plug the printer into your laptop via USB. Windows auto-installs drivers.</p></div>
+        <div class="gs"><div class="gsn">2</div><p>If it fails, search for your model online: e.g. <code>Epson TM-T20III driver Windows</code>.</p></div>
+        <div class="gs"><div class="gsn">3</div><p>Open <strong>Windows Settings → Printers & scanners</strong>. Note the exact printer name shown there.</p></div>
+        <div class="gs"><div class="gsn">4</div><p>Right now: system uses the <strong>browser print dialog</strong> — just select your thermal printer when it appears. No extra software needed.</p></div>
+        <div class="gs"><div class="gsn">5</div><p>For <strong>silent auto-printing</strong> (no dialog): install <code>QZ Tray</code> from <code>qz.io</code> (free), then enter the Windows printer name below.</p></div>
+      </div>
+      <div class="a2" style="margin-bottom:12px">
+        <div class="ac">
+          <div class="aclbl">Receipt Template</div>
+          <div class="af"><label>Restaurant Name</label><input id="s-rname" placeholder="My Restaurant"></div>
+          <div class="af"><label>Address</label><input id="s-raddr" placeholder="123 Main Street"></div>
+          <div class="af"><label>Phone</label><input id="s-rphone" placeholder="+30 210 000 0000"></div>
+          <div class="af"><label>VAT / AFM</label><input id="s-rvat" placeholder="EL123456789"></div>
+          <div class="af"><label>Footer Message</label><textarea id="s-rfooter" rows="2" placeholder="Thank you!"></textarea></div>
+          <div class="af"><label>Show Waiter Name</label><select id="s-rwaiter"><option value="true">Yes</option><option value="false">No</option></select></div>
+        </div>
+        <div class="ac">
+          <div class="aclbl">Preview &amp; Kitchen Code</div>
+          <div class="af"><label>Kitchen Display PIN (4 digits)</label><input id="s-kcode" placeholder="1234" maxlength="4" type="tel"></div>
+          <div id="rcpt-prev" style="margin-top:8px;background:var(--bg);border:1px solid var(--b1);border-radius:6px;padding:10px;font-size:12px;line-height:1.8;font-family:monospace;min-height:120px"></div>
+        </div>
+      </div>
+      <div class="ash" style="font-size:13px;margin-bottom:9px">Printers — each slot can handle one or multiple functions</div>
+      <div id="pslots"></div>
+      <div style="margin-top:10px;display:flex;gap:7px;flex-wrap:wrap">
+        <button class="btn blue" onclick="saveSettings()">Save All Settings</button>
+        <button class="btn" onclick="loadSettings()">Reload</button>
+        <button class="btn" onclick="doTestPrint()">Test Print</button>
+      </div>
+    </div>
+  </div>
+</div>
+```
+
+  </div>
+</div>
+<!-- PERSONALISATION -->
+<div class="ov" id="ov-pers">
+  <div class="modal md">
+    <h3>Add to Order</h3>
+    <div class="ppc" id="pp-info"></div>
+    <div class="qrow"><label>Qty</label><div class="pqc"><button class="pqb" onclick="pq(-1)">-</button><span class="pqn" id="pqn">1</span><button class="pqb" onclick="pq(1)">+</button></div></div>
+    <div class="af"><label>Notes (optional)</label><textarea id="pers-note" rows="2" placeholder="No onions, well done, no ice…"></textarea></div>
+    <div class="mf"><button class="btn" onclick="cov('ov-pers')">Cancel</button><button class="btn blue" onclick="persOk()">Add to Order</button></div>
+  </div>
+</div>
+
+<!-- BILL -->
+
+<div class="ov" id="ov-bill">
+  <div class="modal lg">
+    <h3 id="bill-h">Bill Preview</h3>
+    <div id="bill-s1">
+      <div id="bill-rcpt"></div>
+      <div class="mf"><button class="btn" onclick="cov('ov-bill')">Cancel</button><button class="btn blue" onclick="doBillPrint()">Print Receipt</button></div>
+    </div>
+    <div id="bill-s2" style="display:none">
+      <p style="font-size:13px;color:var(--t3);margin-bottom:8px;font-weight:500">Receipt printed. How did the customer pay?</p>
+      <div class="pg">
+        <button class="popt" id="pay-cash" onclick="selPay('cash')"><div class="pl">CASH</div><div class="ps">Physical money</div></button>
+        <button class="popt" id="pay-card" onclick="selPay('card')"><div class="pl">CARD / POS</div><div class="ps">Card terminal</div></button>
+      </div>
+      <div class="mf"><button class="btn" onclick="cov('ov-bill')">Cancel</button><button class="btn green" onclick="confirmClose()">Close Table</button></div>
+    </div>
+  </div>
+</div>
+
+<!-- DISCOUNT -->
+
+<div class="ov" id="ov-disc">
+  <div class="modal sm">
+    <h3>Apply Discount</h3>
+    <div class="dopts">
+      <div class="dopt sel" id="dopt-pct" onclick="setDType('percent')"><div class="dopt-l">% Percent</div><div class="dopt-s">e.g. 10% off total</div></div>
+      <div class="dopt" id="dopt-fix" onclick="setDType('fixed')"><div class="dopt-l">€ Fixed</div><div class="dopt-s">e.g. €5.00 off</div></div>
+    </div>
+    <div class="af"><label id="dval-lbl">Amount (%)</label><input id="disc-val" type="number" min="0" step="1" placeholder="10"></div>
+    <div class="mf"><button class="btn" onclick="cov('ov-disc')">Cancel</button><button class="btn green" onclick="applyDiscount()">Apply</button></div>
+  </div>
+</div>
+
+<!-- SPLIT BILL -->
+
+<div class="ov" id="ov-split">
+  <div class="modal lg">
+    <h3>Split Bill</h3>
+    <p style="font-size:12px;color:var(--t3);margin-bottom:10px">Check items for Part 1. Unchecked items go to Part 2.</p>
+    <div id="split-items"></div>
+    <div id="split-totals" style="display:flex;gap:8px;margin-top:10px"></div>
+    <div class="mf"><button class="btn" onclick="cov('ov-split')">Cancel</button><button class="btn blue" onclick="processSplit()">Split &amp; Print</button></div>
+  </div>
+</div>
+
+<!-- ADMIN ORDER VIEW -->
+
+<div class="ov" id="ov-ord">
+  <div class="modal md">
+    <h3>Order Details</h3>
+    <div id="ord-detail"></div>
+    <div class="mf"><button class="btn" onclick="cov('ov-ord')">Close</button><button class="btn blue" onclick="printOrdView()">Print</button></div>
+  </div>
+</div>
+
+<!-- EDIT -->
+
+<div class="ov" id="ov-edit">
+  <div class="modal sm">
+    <h3 id="edit-h">Edit</h3>
+    <div id="edit-body"></div>
+    <div class="mf"><button class="btn" onclick="cov('ov-edit')">Cancel</button><button class="btn blue" onclick="saveEdit()">Save</button></div>
+  </div>
+</div>
+
+<!-- DAILY SUMMARY -->
+
+<div class="ov" id="ov-sum">
+  <div class="modal md">
+    <h3>Daily Revenue</h3>
+    <div id="sum-date" style="font-size:11px;color:var(--t3);margin-bottom:8px"></div>
+    <div id="sum-body"></div>
+    <div class="mf"><button class="btn" onclick="printSum()">Print</button><button class="btn blue" onclick="cov('ov-sum')">Close</button></div>
+  </div>
+</div>
+
+<!-- PIN LOCK (daily revenue for waiters) -->
+
+<div class="ov" id="ov-plock">
+  <div class="modal sm">
+    <h3>Daily Revenue</h3>
+    <p style="font-size:12px;color:var(--t3)">Enter admin code to view today's revenue.</p>
+    <div style="display:flex;gap:7px;justify-content:center;margin-top:10px">
+      <div class="ld" id="lp0"></div><div class="ld" id="lp1"></div><div class="ld" id="lp2"></div><div class="ld" id="lp3"></div>
+    </div>
+    <div class="plkp">
+      <button class="plk" ontouchstart="lkpT('1')" onclick="lkpT('1')">1</button>
+      <button class="plk" ontouchstart="lkpT('2')" onclick="lkpT('2')">2</button>
+      <button class="plk" ontouchstart="lkpT('3')" onclick="lkpT('3')">3</button>
+      <button class="plk" ontouchstart="lkpT('4')" onclick="lkpT('4')">4</button>
+      <button class="plk" ontouchstart="lkpT('5')" onclick="lkpT('5')">5</button>
+      <button class="plk" ontouchstart="lkpT('6')" onclick="lkpT('6')">6</button>
+      <button class="plk" ontouchstart="lkpT('7')" onclick="lkpT('7')">7</button>
+      <button class="plk" ontouchstart="lkpT('8')" onclick="lkpT('8')">8</button>
+      <button class="plk" ontouchstart="lkpT('9')" onclick="lkpT('9')">9</button>
+      <button class="plk del" ontouchstart="lkdT()" onclick="lkdT()">DEL</button>
+      <button class="plk" ontouchstart="lkpT('0')" onclick="lkpT('0')">0</button>
+      <button class="plk go" ontouchstart="lkgoT()" onclick="lkgoT()">OK</button>
+    </div>
+    <div class="pl-err" id="pl-err"></div>
+    <div class="mf"><button class="btn" onclick="cov('ov-plock')">Cancel</button></div>
+  </div>
+</div>
+
+<!-- CUSTOM CONFIRM (no browser dialogs - fullscreen safe) -->
+
+<div class="ov" id="ov-confirm">
+  <div class="modal sm">
+    <div class="conf-icon" id="conf-icon">⚠️</div>
+    <h3 id="conf-title">Confirm</h3>
+    <div class="conf-msg" id="conf-msg"></div>
+    <div class="mf">
+      <button class="btn" onclick="confResolve(false)">Cancel</button>
+      <button class="btn" id="conf-ok" onclick="confResolve(true)">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<div class="toasts" id="toasts"></div>
+<div id="pz"></div>
+<script src="/socket.io/socket.io.js"></script>
+<script>
+'use strict';
+const API='/api';
+let token=null,user=null,pin='',lkPin='';
+let tableId=null,orderId=null,tableNum=null,isTakeaway=false;
+let cart=[],sentItems=[];
+let socket=null,persP=null,persQv=1;
+let editType=null,editId=null,selPayMethod='',billOId=null,billPrinted=false;
+let allTables=[],curFilter='all';
+let S={};
+let _catsCache=null, _catsTime=0; // category cache — avoids lag on every table open
+let discType='percent';
+let confResCb=null;
+
+// ─── CUSTOM CONFIRM ───────────────────────────────────────────────────────────
+function confirm2(msg,okLabel=‘Confirm’,danger=false,icon=‘⚠️’){
+return new Promise(res=>{
+confResCb=res;
+document.getElementById(‘conf-icon’).textContent=icon;
+document.getElementById(‘conf-title’).textContent=‘Are you sure?’;
+document.getElementById(‘conf-msg’).textContent=msg;
+const ok=document.getElementById(‘conf-ok’);
+ok.textContent=okLabel; ok.className=‘btn’+(danger?’ red’:’ blue’);
+ov(‘ov-confirm’);
+});
+}
+function confResolve(v){cov(‘ov-confirm’);if(confResCb){confResCb(v);confResCb=null;}}
+
+// ─── CLOCK ────────────────────────────────────────────────────────────────────
+const COLORS=[’#1d4ed8’,’#15803d’,’#b45309’,’#7c3aed’,’#b91c1c’,’#0e7490’,’#6b21a8’,’#0f766e’,’#c2410c’,’#1e40af’];
+function tick(){
+const n=new Date();
+const ce=document.getElementById(‘tb-clock’),de=document.getElementById(‘tb-date’);
+if(ce)ce.textContent=n.toLocaleTimeString(‘en-GB’,{hour:‘2-digit’,minute:‘2-digit’});
+if(de)de.textContent=n.toLocaleDateString(‘en-GB’,{weekday:‘short’,day:‘numeric’,month:‘short’});
+}
+setInterval(tick,1000); tick();
+
+// ─── LOGIN ─────────────────────────────────────────────────────────────────────
+// FIX: Use CSS class toggle (NOT style.display) + ontouchstart dedup
+let _lt=0; // last touch timestamp for dedup
+function kpT(n){const t=Date.now();if(t-_lt<250)return;_lt=t;kp(n);}
+function kdT(){const t=Date.now();if(t-_lt<250)return;_lt=t;kd();}
+function kgoT(){const t=Date.now();if(t-_lt<250)return;_lt=t;kgo();}
+function kp(n){if(pin.length>=6)return;pin+=n;pips(‘pd’,pin.length,6);}
+function kd(){pin=pin.slice(0,-1);pips(‘pd’,pin.length,6);}
+function pips(p,l,m){for(let i=0;i<m;i++)document.getElementById(p+i)?.classList.toggle(‘on’,i<l);}
+async function kgo(){
+if(!pin)return;
+try{
+const r=await fetch(`${API}/auth/login`,{method:‘POST’,headers:{‘Content-Type’:‘application/json’},body:JSON.stringify({pin})});
+const d=await r.json();
+if(!r.ok){document.getElementById(‘le’).textContent=d.error||‘Invalid PIN’;pin=’’;pips(‘pd’,0,6);return;}
+token=d.token; user=d.user; pin=’’; pips(‘pd’,0,6); onLogin();
+}catch(e){document.getElementById(‘le’).textContent=‘Cannot connect to server’;}
+}
+document.addEventListener(‘keydown’,e=>{
+if(!document.getElementById(‘login’).classList.contains(‘off’)){
+if(e.key>=‘0’&&e.key<=‘9’)kp(e.key);
+else if(e.key===‘Backspace’)kd();
+else if(e.key===‘Enter’)kgo();
+}
+});
+
+// PIN LOCK (daily revenue)
+let _llt=0;
+function lkpT(n){const t=Date.now();if(t-_llt<250)return;_llt=t;lkp(n);}
+function lkdT(){const t=Date.now();if(t-_llt<250)return;_llt=t;lkd();}
+function lkgoT(){const t=Date.now();if(t-_llt<250)return;_llt=t;lkgo();}
+function lkp(n){if(lkPin.length>=4)return;lkPin+=n;pips(‘lp’,lkPin.length,4);}
+function lkd(){lkPin=lkPin.slice(0,-1);pips(‘lp’,lkPin.length,4);}
+async function lkgo(){
+if(lkPin===‘9090’){lkPin=’’;pips(‘lp’,0,4);cov(‘ov-plock’);showSumContent();}
+else{document.getElementById(‘pl-err’).textContent=‘Incorrect code’;lkPin=’’;pips(‘lp’,0,4);}
+}
+
+async function onLogin(){
+document.getElementById(‘login’).classList.add(‘off’);
+document.getElementById(‘app’).classList.add(‘on’);
+document.getElementById(‘tb-name’).textContent=user.name;
+const rb=document.getElementById(‘tb-role’);rb.textContent=user.role;rb.className=‘tb-role’;
+if(user.role===‘admin’){
+document.getElementById(‘btn-adm’).style.display=’’;
+document.getElementById(‘btn-home’).style.display=’’;
+}
+document.getElementById(‘btn-ta’).style.display=’’;
+document.getElementById(‘btn-sum’).style.display=’’;
+try{S=await api(’/settings’);}catch{}
+connectSocket(); showHome();
+}
+
+function doLogout(){
+token=null;user=null;cart=[];sentItems=[];tableId=null;orderId=null;tableNum=null;isTakeaway=false;
+document.getElementById(‘app’).classList.remove(‘on’);
+document.getElementById(‘login’).classList.remove(‘off’);
+document.getElementById(‘le’).textContent=’’; pin=’’; pips(‘pd’,0,6);
+[‘btn-adm’,‘btn-home’,‘btn-ta’,‘btn-sum’].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=‘none’;});
+if(socket)socket.disconnect();
+}
+
+function connectSocket(){
+socket=io();
+socket.on(‘table_update’,t=>{
+const idx=allTables.findIndex(x=>x.id===t.id);
+if(idx>=0)allTables[idx].status=t.status;
+const el=document.querySelector(`#tgrid .tc[data-id="${t.id}"]`);
+if(el){el.className=‘tc ‘+t.status;const s=el.querySelector(’.tc-l’);if(s)s.textContent=stlbl(t.status);}
+updCounts();
+});
+}
+function stlbl(s){return{empty:‘Free’,occupied:‘Busy’,bill_requested:‘Bill’}[s]||s;}
+function sv(n){document.querySelectorAll(’#app .view’).forEach(v=>v.classList.remove(‘on’));document.getElementById(‘view-’+n).classList.add(‘on’);}
+
+// ─── HOME ────────────────────────────────────────────────────────────────────
+async function showHome(){
+sv(‘home’);
+try{allTables=await api(’/tables’);renderGrid(curFilter);updCounts();}
+catch(e){toast(‘Cannot load tables: ‘+e.message,‘err’);}
+}
+function renderGrid(f){
+curFilter=f; const g=document.getElementById(‘tgrid’); g.innerHTML=’’;
+const list=f===‘all’?allTables:allTables.filter(t=>t.status===f);
+list.forEach(t=>{
+const d=document.createElement(‘div’);d.className=‘tc ‘+t.status;d.dataset.id=t.id;
+d.innerHTML=`<div class="tc-dot"></div><div class="tc-n">${t.number}</div><div class="tc-l">${stlbl(t.status)}</div>`;
+d.onclick=()=>openTable(t); g.appendChild(d);
+});
+}
+function updCounts(){
+document.getElementById(‘hn-all’).textContent=allTables.length;
+document.getElementById(‘hn-emp’).textContent=allTables.filter(t=>t.status===‘empty’).length;
+document.getElementById(‘hn-occ’).textContent=allTables.filter(t=>t.status===‘occupied’).length;
+document.getElementById(‘hn-bill’).textContent=allTables.filter(t=>t.status===‘bill_requested’).length;
+}
+function filt(f,el){document.querySelectorAll(’.hb’).forEach(b=>b.classList.remove(‘on’));el.classList.add(‘on’);renderGrid(f);}
+
+async function openTable(t){
+billPrinted=false; // reset bill lock for this table
+tableId=t.id; tableNum=t.number; isTakeaway=false; cart=[]; sentItems=[];
+document.getElementById(‘ol-title’).textContent=‘Table ‘+t.number;
+document.getElementById(‘ol-meta’).textContent=user.name;
+const stEl=document.getElementById(‘ol-stag’); stEl.style.display=‘none’;
+try{
+// Load sent/open order
+const o=await api(’/orders/table/’+t.id);
+if(o){
+orderId=o.id;
+sentItems=(o.items||[]).filter(i=>i.sent_to_kitchen&&!i.cancelled);
+if(o.status===‘bill_requested’){
+stEl.textContent=‘Awaiting Payment’; stEl.className=‘opstag bill’; stEl.style.display=‘inline-block’;
+setBillBtn(‘Pay / Close’,‘pm’,()=>doBillPayStep());
+// Mark as printed so new items can’t be sent — but keep Send Order visible as greyed
+billPrinted=true;
+// Don’t hide buttons on re-entry — just grey the send button
+document.querySelectorAll(’.ab.send’).forEach(b=>{
+b.style.opacity=‘0.4’; b.style.background=’#64748b’; b.textContent=‘Bill Printed ✓’;
+});
+} else {
+setBillBtn(‘Print Bill’,’’,()=>doBill());
+// Ensure buttons are visible and unlocked for open orders
+document.querySelectorAll(’.ab.send’).forEach(b=>{b.style.opacity=’’;b.style.pointerEvents=’’;b.textContent=‘Send Order’;b.style.background=’’;});
+document.querySelectorAll(’.ab.disc,.ab.split,.ab.clr’).forEach(b=>{b.style.display=’’;});
+}
+} else {
+orderId=null; setBillBtn(‘Print Bill’,’’,()=>doBill());
+// Ensure all buttons visible for fresh table
+document.querySelectorAll(’.ab.send’).forEach(b=>{b.style.opacity=’’;b.style.pointerEvents=’’;b.textContent=‘Send Order’;b.style.background=’’;});
+document.querySelectorAll(’.ab.disc,.ab.split,.ab.clr’).forEach(b=>{b.style.display=’’;});
+}
+// Load THIS waiter’s pending cart (separate from order, not visible to others)
+const pc=await api(’/orders/pending-cart?table_id=’+t.id);
+if(pc && pc.items && pc.items.length){
+// Normalize field names: saved as {product_name,product_price,quantity} → cart format {name,price,qty}
+cart=pc.items.map(i=>({
+product_id:i.product_id||null,
+name:i.product_name||i.name||’?’,
+price:parseFloat(i.product_price||i.price||0),
+qty:parseInt(i.quantity||i.qty||1),
+note:i.notes||i.note||’’,
+ptype:i.ptype||i.product_type||‘food’
+}));
+toast(‘Your unsent items restored’,‘info’);
+}
+}catch(e){toast(e.message,‘err’);return;}
+renderOList(); sv(‘order’); loadCats();
+}
+
+async function goHome(){
+// Save unsent cart to pending_carts — does NOT create an order, does NOT mark table busy
+// Only THIS waiter can see these items when they come back
+if(cart.length>0){
+try{
+await api(’/orders/pending-cart’,‘POST’,{
+table_id:tableId||null,
+is_takeaway:isTakeaway,
+items:cart.map(i=>({product_id:i.product_id,product_name:i.name,product_price:i.price,quantity:i.qty,notes:i.note||’’,ptype:i.ptype||‘food’}))
+});
+}catch(e){console.error(‘Could not save cart:’,e.message);}
+} else if(tableId||isTakeaway){
+try{
+const params=isTakeaway ? ‘is_takeaway=true’ : ‘table_id=’+tableId;
+await api(’/orders/pending-cart?’+params,‘DELETE’);
+}catch{}
+}
+cart=[]; sentItems=[]; tableId=null; orderId=null; tableNum=null; isTakeaway=false;
+showHome();
+}
+
+function setBillBtn(txt,cls,fn){
+const b=document.getElementById(‘btn-bill’);
+b.textContent=txt; b.className=‘ab bill’+(cls?’ ‘+cls:’’); b.onclick=fn;
+}
+
+async function startTakeaway(){
+billPrinted=false;
+tableId=null; tableNum=null; isTakeaway=true; orderId=null; cart=[]; sentItems=[];
+document.getElementById(‘ol-title’).textContent=‘Takeaway’;
+document.getElementById(‘ol-meta’).textContent=user.name;
+document.getElementById(‘ol-stag’).style.display=‘none’;
+setBillBtn(‘Print Bill’,’’,()=>doBill());
+// Restore this waiter’s pending takeaway cart
+try{
+const pc=await api(’/orders/pending-cart?is_takeaway=true’);
+if(pc&&pc.items&&pc.items.length){
+cart=pc.items.map(i=>({
+product_id:i.product_id||null,
+name:i.product_name||i.name||’?’,
+price:parseFloat(i.product_price||i.price||0),
+qty:parseInt(i.quantity||i.qty||1),
+note:i.notes||i.note||’’,
+ptype:i.ptype||i.product_type||‘food’
+}));
+toast(‘Your unsent takeaway items restored’,‘info’);
+}
+}catch{}
+renderOList(); sv(‘order’); loadCats();
+}
+
+async function clearUnsent(){
+if(!cart.length){toast(‘No unsent items’,‘info’);return;}
+cart=[]; renderOList();
+try{
+const params=isTakeaway
+? ‘is_takeaway=true’
+: (tableId ? ‘table_id=’+tableId : ‘’);
+if(params) await api(’/orders/pending-cart?’+params,‘DELETE’);
+}catch{}
+toast(‘New items cleared’,‘ok’);
+}
+
+// ─── MENU ─────────────────────────────────────────────────────────────────────
+async function loadCats(){
+try{
+// Cache categories for 60s to reduce lag
+const now=Date.now();
+if(_catsCache && now-_catsTime<60000){ const cats=_catsCache; buildCatBar(cats); return; }
+const cats=await api(’/menu/categories’);
+_catsCache=cats; _catsTime=Date.now();
+buildCatBar(cats);
+}catch(e){toast(‘Menu error: ‘+e.message,‘err’);}
+}
+function buildCatBar(cats){
+const bar=document.getElementById(‘catbar’); bar.innerHTML=’’;
+cats.forEach((c,i)=>{
+const btn=document.createElement(‘button’); btn.className=‘ctab’+(i===0?’ on’:’’);
+btn.textContent=c.name; btn.style.setProperty(’–cc’,c.color||’#3b82f6’);
+if(i===0)btn.style.background=(c.color||’#3b82f6’)+‘22’;
+btn.onclick=()=>{
+document.querySelectorAll(’.ctab’).forEach(x=>{x.classList.remove(‘on’);x.style.background=‘transparent’;});
+btn.classList.add(‘on’); btn.style.background=(c.color||’#3b82f6’)+‘22’;
+selectCat(c);
+};
+bar.appendChild(btn);
+});
+if(cats.length)selectCat(cats[0]);
+}
+async function selectCat(cat){
+const subs=await api(’/menu/subcategories/’+cat.id);
+const sb=document.getElementById(‘subbar’); sb.innerHTML=’’;
+if(subs.length){
+sb.style.display=‘flex’;
+const allCh=document.createElement(‘button’); allCh.className=‘schip on’; allCh.textContent=‘All’;
+allCh.onclick=()=>{document.querySelectorAll(’.schip’).forEach(x=>x.classList.remove(‘on’));allCh.classList.add(‘on’);loadProds(cat.id,null);};
+sb.appendChild(allCh);
+subs.forEach(s=>{
+const ch=document.createElement(‘button’); ch.className=‘schip’; ch.textContent=s.name;
+ch.onclick=()=>{document.querySelectorAll(’.schip’).forEach(x=>x.classList.remove(‘on’));ch.classList.add(‘on’);loadProds(null,s.id);};
+sb.appendChild(ch);
+});
+loadProds(cat.id,null);
+}else{sb.style.display=‘none’;loadProds(cat.id,null);}
+}
+async function loadProds(catId,subId){
+const url=’/menu/products?’+(subId?‘subcategory_id=’+subId:catId?‘category_id=’+catId:’’);
+const prods=await api(url);
+const g=document.getElementById(‘pgrid’); g.innerHTML=’’;
+if(!prods.length){g.innerHTML=’<div style="color:var(--t3);font-size:13px;padding:14px;grid-column:1/-1">No products here</div>’;return;}
+prods.forEach((p,i)=>{
+const col=(p.color&&![’#3a3a3c’,’#1a5fb4’,’#2563eb’].includes(p.color))?p.color:COLORS[i%COLORS.length];
+const t=document.createElement(‘div’); t.className=‘ptile’; t.style.background=col;
+t.innerHTML=`<div class="pt-n">${p.name}</div><div class="pt-p">€${parseFloat(p.price).toFixed(2)}</div>`;
+t.onclick=()=>openPers(p); g.appendChild(t);
+});
+}
+
+// ─── PERSONALISATION ──────────────────────────────────────────────────────────
+function openPers(p){
+persP=p; persQv=1;
+document.getElementById(‘pqn’).textContent=1;
+document.getElementById(‘pers-note’).value=’’;
+document.getElementById(‘pp-info’).innerHTML=` <div><div class="ppn">${p.name}</div>${p.description?`<div class="ppd">${p.description}</div>`:''}</div> <div class="ppp">€${parseFloat(p.price).toFixed(2)}</div>`;
+ov(‘ov-pers’);
+}
+function pq(d){persQv=Math.max(1,persQv+d);document.getElementById(‘pqn’).textContent=persQv;}
+function persOk(){
+if(billPrinted){cov(‘ov-pers’);toast(‘Bill already printed — cannot add items’,‘err’);return;}
+const note=document.getElementById(‘pers-note’).value.trim(), p=persP;
+const ex=cart.find(i=>i.product_id===p.id&&i.note===(note||’’)&&i.ptype===(p.product_type||‘food’));
+if(ex)ex.qty+=persQv;
+else cart.push({product_id:p.id,name:p.name,price:parseFloat(p.price),qty:persQv,note,ptype:p.product_type||‘food’});
+renderOList(); cov(‘ov-pers’);
+}
+
+// ─── ORDER LIST ───────────────────────────────────────────────────────────────
+function renderOList(){
+const el=document.getElementById(‘ol-body’);
+const rawTotal=cart.reduce((s,i)=>s+i.price*i.qty,0)+sentItems.reduce((s,i)=>s+parseFloat(i.product_price)*i.quantity,0);
+document.getElementById(‘tot-amt’).textContent=‘€’+rawTotal.toFixed(2);
+el.innerHTML=’’;
+if(!sentItems.length&&!cart.length){el.innerHTML=’<div class="opempty">No items yet</div>’;return;}
+if(sentItems.length){
+el.insertAdjacentHTML(‘beforeend’,’<div class="osec">Sent</div>’);
+sentItems.forEach(item=>{
+const d=document.createElement(‘div’); d.className=‘oli sent’;
+d.innerHTML=` <div class="olitop"><div class="olin">${item.product_name}</div><div class="olip">€${(parseFloat(item.product_price)*item.quantity).toFixed(2)}</div></div> ${item.notes?`<div class="olinote">${item.notes}</div>`:''} <div style="display:flex;align-items:center;justify-content:space-between;margin-top:3px"> <span class="olistag">Sent ×${item.quantity}</span> <button class="olirm" onclick="removeSent(${item.id})">Remove</button> </div>`;
+el.appendChild(d);
+});
+}
+if(cart.length){
+el.insertAdjacentHTML(‘beforeend’,’<div class="osec">New Items</div>’);
+cart.forEach((item,i)=>{
+const d=document.createElement(‘div’); d.className=‘oli’;
+d.innerHTML=` <div class="olitop"><div class="olin">${item.name}</div><div class="olip">€${(item.price*item.qty).toFixed(2)}</div><button class="olix" onclick="rmNew(${i})">×</button></div> ${item.note?`<div class="olinote">${item.note}</div>`:''} <div class="oliqty"><button class="oqb" onclick="chq(${i},-1)">-</button><span class="oqn">${item.qty}</span><button class="oqb" onclick="chq(${i},1)">+</button></div>`;
+el.appendChild(d);
+});
+}
+}
+function chq(i,d){cart[i].qty+=d;if(cart[i].qty<=0)cart.splice(i,1);renderOList();}
+function rmNew(i){cart.splice(i,1);renderOList();}
+
+async function removeSent(itemId){
+const ok=await confirm2(‘Remove this item?\nIf sent to kitchen/bar, a CANCELLATION ticket prints.’,‘Remove’,true,‘🗑️’);
+if(!ok)return;
+try{
+const res=await api(’/orders/items/’+itemId,‘DELETE’);
+sentItems=sentItems.filter(i=>i.id!==itemId);
+renderOList();
+if(res.cancellation?.sent){
+printCancelTkt(res.cancellation.item,res.cancellation.ticket_num,res.cancellation.destination);
+toast(’Removed — cancel printed to ’+res.cancellation.destination,‘warn’);
+}else toast(‘Item removed’,‘info’);
+if(res.table_freed){toast(‘All items gone — table is free’,‘ok’);cart=[];sentItems=[];setTimeout(()=>showHome(),800);}
+}catch(e){toast(e.message,‘err’);}
+}
+
+function printCancelTkt(item,num,dest){
+// Printserver handles this via socket — no window.print needed
+// The cancellation_ticket socket event was already emitted by the server
+// This function is kept for compatibility but does nothing
+}
+
+// ─── SEND ORDER ───────────────────────────────────────────────────────────────
+async function doSend(){
+if(billPrinted){toast(‘Bill already printed — collect payment first’,‘err’);return;}
+if(!cart.length){toast(‘No items to send’,‘err’);return;}
+try{
+if(!orderId){
+const o=await api(’/orders’,‘POST’,{table_id:tableId||null,type:isTakeaway?‘takeaway’:‘dine-in’});
+orderId=o.id;
+}
+await api(’/orders/’+orderId+’/items’,‘POST’,{
+items:cart.map(i=>({product_id:i.product_id,product_name:i.name,product_price:i.price,quantity:i.qty,notes:i.note||null,product_type:i.ptype||‘food’}))
+});
+const res=await api(’/orders/’+orderId+’/send-kitchen’,‘POST’,{});
+// Print food → kitchen printer, drinks → bar printer (separate jobs)
+if(res.food_items?.length) printTkt(res.food_items,res.ticket_num,‘kitchen’);
+if(res.drink_items?.length) printTkt(res.drink_items,res.ticket_num,‘bar’);
+const o=await api(’/orders/’+orderId);
+sentItems=(o.items||[]).filter(i=>i.sent_to_kitchen&&!i.cancelled);
+cart=[];
+// Clear pending cart since items are now sent
+try{ await api(’/orders/pending-cart?table_id=’+(tableId||’’)+’&is_takeaway=’+(isTakeaway?‘true’:‘false’),‘DELETE’); }catch{}
+renderOList(); toast(‘Order sent’,‘ok’);
+}catch(e){toast(e.message,‘err’);}
+}
+
+function printTkt(items,num,dest){
+// Kitchen/bar tickets are printed automatically by the printserver
+// The server emits ‘new_ticket’ socket event which printserver catches and prints via QZ Tray
+// No browser print dialog needed here
+}
+// ─── DISCOUNT ─────────────────────────────────────────────────────────────────
+function openDiscount(){
+if(!orderId&&!cart.length){toast(‘Add items first’,‘err’);return;}
+discType=‘percent’;
+document.getElementById(‘dopt-pct’).classList.add(‘sel’);
+document.getElementById(‘dopt-fix’).classList.remove(‘sel’);
+document.getElementById(‘dval-lbl’).textContent=‘Amount (%)’;
+document.getElementById(‘disc-val’).value=’’;
+ov(‘ov-disc’);
+}
+function setDType(t){
+discType=t;
+document.getElementById(‘dopt-pct’).classList.toggle(‘sel’,t===‘percent’);
+document.getElementById(‘dopt-fix’).classList.toggle(‘sel’,t===‘fixed’);
+document.getElementById(‘dval-lbl’).textContent=‘Amount (’+(t===‘percent’?’%’:‘€’)+’)’;
+}
+async function applyDiscount(){
+const val=parseFloat(document.getElementById(‘disc-val’).value||0);
+if(!val||val<=0){toast(‘Enter a valid amount’,‘err’);return;}
+if(orderId){
+try{
+const res=await api(’/orders/’+orderId+’/discount’,‘POST’,{discount_type:discType,discount_value:val});
+cov(‘ov-disc’); toast(‘Discount applied’,‘ok’);
+const o=await api(’/orders/’+orderId);
+sentItems=(o.items||[]).filter(i=>i.sent_to_kitchen&&!i.cancelled);
+document.getElementById(‘tot-amt’).textContent=‘€’+parseFloat(o.total).toFixed(2);
+// Show discount badge
+const existing=document.querySelector(’.disc-badge’);
+if(existing)existing.remove();
+const badge=document.createElement(‘div’);badge.className=‘disc-badge’;
+badge.innerHTML=`<span>Discount: ${discType==='percent'?val+'%':'€'+val.toFixed(2)}</span><button class="btn sm red" style="height:18px;padding:0 5px;font-size:9px" onclick="removeDiscount()">×</button>`;
+document.getElementById(‘ol-body’).prepend(badge);
+}catch(e){toast(e.message,‘err’);}
+}else{cov(‘ov-disc’);toast(‘Discount noted — apply after sending’,‘info’);}
+}
+async function removeDiscount(){
+if(!orderId)return;
+try{await api(’/orders/’+orderId+’/discount’,‘POST’,{discount_type:null,discount_value:0});toast(‘Discount removed’,‘ok’);const o=await api(’/orders/’+orderId);sentItems=(o.items||[]).filter(i=>i.sent_to_kitchen&&!i.cancelled);renderOList();}catch(e){toast(e.message,‘err’);}
+}
+
+// ─── SPLIT BILL ───────────────────────────────────────────────────────────────
+function openSplit(){
+if(!sentItems.length){toast(‘No sent items to split’,‘err’);return;}
+document.getElementById(‘split-items’).innerHTML=sentItems.map((it,i)=>` <div style="display:flex;align-items:center;gap:9px;padding:7px 0;border-bottom:1px solid var(--b1)"> <input type="checkbox" id="sc${i}" checked style="width:16px;height:16px;accent-color:var(--bl);cursor:pointer;flex-shrink:0"> <label for="sc${i}" style="flex:1;font-size:13px;font-weight:600;cursor:pointer">${it.quantity}× ${it.product_name}</label> <span style="font-size:13px;font-weight:700;color:var(--bl)">€${(parseFloat(it.product_price)*it.quantity).toFixed(2)}</span> </div>`).join(’’);
+updSplitTotals();
+sentItems.forEach((_,i)=>document.getElementById(‘sc’+i)?.addEventListener(‘change’,updSplitTotals));
+ov(‘ov-split’);
+}
+function updSplitTotals(){
+let t1=0,t2=0;
+sentItems.forEach((it,i)=>{const v=parseFloat(it.product_price)*it.quantity;if(document.getElementById(‘sc’+i)?.checked)t1+=v;else t2+=v;});
+document.getElementById(‘split-totals’).innerHTML=` <div style="flex:1;text-align:center;background:var(--bll);border:1px solid var(--blb);border-radius:7px;padding:9px"> <div style="font-size:9px;font-weight:700;color:var(--bl);text-transform:uppercase;margin-bottom:2px">Part 1</div> <div style="font-size:19px;font-weight:900;color:var(--bl)">€${t1.toFixed(2)}</div> </div> <div style="flex:1;text-align:center;background:var(--grl);border:1px solid var(--grb);border-radius:7px;padding:9px"> <div style="font-size:9px;font-weight:700;color:var(--gr);text-transform:uppercase;margin-bottom:2px">Part 2</div> <div style="font-size:19px;font-weight:900;color:var(--gr)">€${t2.toFixed(2)}</div> </div>`;
+}
+async function processSplit(){
+let p1=[],p2=[];
+sentItems.forEach((it,i)=>{if(document.getElementById(‘sc’+i)?.checked)p1.push(it);else p2.push(it);});
+if(!p1.length||!p2.length){toast(‘Each part needs at least 1 item’,‘err’);return;}
+const s1=p1.reduce((s,i)=>s+parseFloat(i.product_price)*i.quantity,0);
+const s2=p2.reduce((s,i)=>s+parseFloat(i.product_price)*i.quantity,0);
+// Emit to printserver (correct variable references)
+if(socket){
+socket.emit(‘print_split_request’,{items:p1,subtotal:s1,part:1,table_number:tableNum,waiter_name:user.name,is_takeaway:isTakeaway});
+socket.emit(‘print_split_request’,{items:p2,subtotal:s2,part:2,table_number:tableNum,waiter_name:user.name,is_takeaway:isTakeaway});
+}
+try{await api(’/orders/’+orderId+’/split’,‘POST’,{splits:[{items:p1,subtotal:s1},{items:p2,subtotal:s2}]});}catch{}
+cov(‘ov-split’);
+// After split — lock order, show two pay buttons
+lockOrderForBill();
+// Replace Pay/Close with split-specific close
+setSplitPayMode(p1, p2, s1, s2);
+toast(‘Split bill printed — collect payment for each part’,‘ok’);
+}
+function printSplitRcpt(items,sub,part){
+// Kept for compatibility — actual printing via socket above
+}
+function setSplitPayMode(p1,p2,s1,s2){
+// Replace bill button with split-specific one
+const b=document.getElementById(‘btn-bill’);
+b.textContent=‘Pay Part 1 (€’+s1.toFixed(2)+’)’;
+b.className=‘ab bill pm’;
+b.onclick=()=>openSplitPay(1,s1,p1,p2,s2);
+}
+async function openSplitPay(part,sub,myItems,otherItems,otherSub){
+selPayMethod=’’;
+document.getElementById(‘pay-cash’).classList.remove(‘sel’);
+document.getElementById(‘pay-card’).classList.remove(‘sel’);
+document.getElementById(‘bill-h’).textContent=‘Close Part ‘+part+’ — €’+sub.toFixed(2);
+document.getElementById(‘bill-s1’).style.display=‘none’;
+document.getElementById(‘bill-s2’).style.display=’’;
+// Override close button for this part
+const closeBtn=document.querySelector(’#bill-s2 .btn.green’);
+if(closeBtn){
+closeBtn.textContent=‘Close Part ‘+part;
+closeBtn.onclick=async()=>{
+if(!selPayMethod){toast(‘Select payment method’,‘err’);return;}
+try{
+// Save payment for this split part
+const splits=part===1?[{items:myItems,subtotal:sub,payment_method:selPayMethod},{items:otherItems,subtotal:otherSub}]
+:[{items:otherItems,subtotal:otherSub},{items:myItems,subtotal:sub,payment_method:selPayMethod}];
+await api(’/orders/’+orderId+’/split’,‘POST’,{splits});
+cov(‘ov-bill’);
+if(part===1){
+// Now show Part 2
+const b=document.getElementById(‘btn-bill’);
+b.textContent=‘Pay Part 2 (€’+otherSub.toFixed(2)+’)’;
+b.onclick=()=>openSplitPay(2,otherSub,otherItems,myItems,sub);
+toast(‘Part 1 paid — now collect Part 2’,‘info’);
+} else {
+// Both parts paid — close the table
+await api(’/orders/’+orderId+’/close’,‘POST’,{payment_method:selPayMethod});
+toast(‘Table closed — both parts paid’,‘ok’);
+cart=[]; sentItems=[]; tableId=null; orderId=null; tableNum=null; isTakeaway=false; billPrinted=false;
+await showHome();
+}
+}catch(e){toast(e.message,‘err’);}
+};
+}
+ov(‘ov-bill’);
+}
+
+// ─── BILL ──────────────────────────────────────────────────────────────────────
+function buildRcptHtml(order){
+const items=(order.items||[]).filter(i=>!i.cancelled);
+const rows=items.map(i=>`<div class="rrow"><span>${i.quantity}× ${i.product_name}</span><span>€${(parseFloat(i.product_price)*i.quantity).toFixed(2)}</span></div>`).join(’’);
+const disc=order.discount_type?`<div class="rrow" style="font-size:11px;color:var(--gr)"><span>Discount (${order.discount_type==='percent'?order.discount_value+'%':'€'+parseFloat(order.discount_value).toFixed(2)})</span><span>−</span></div>`:’’;
+return `<div class="rcpt"> <div class="rc rb" style="font-size:14px;margin-bottom:2px">${S.receipt_name||'Restaurant'}</div> ${S.receipt_address?`<div class="rc" style="font-size:11px;color:var(--t3)">${S.receipt_address}</div>`:''} ${S.receipt_phone?`<div class="rc" style="font-size:11px;color:var(--t3)">${S.receipt_phone}</div>`:''} ${S.receipt_vat?`<div class="rc" style="font-size:11px;color:var(--t3)">VAT: ${S.receipt_vat}</div>`:''} <div class="rc" style="font-size:11px;color:var(--t3);margin-top:2px">${order.table_number?'Table '+order.table_number:'Takeaway'} · ${new Date().toLocaleString('en-GB')}</div> ${S.receipt_show_waiter!=='false'?`<div class="rc" style="font-size:11px;color:var(--t3)">Waiter: ${order.waiter_name||user.name}</div>`:''} <div class="rdiv"></div>${rows}${disc}<div class="rdiv"></div> <div class="rrow rb" style="font-size:13px"><span>TOTAL</span><span>€${parseFloat(order.total||0).toFixed(2)}</span></div> ${S.receipt_footer?`<div class="rc" style="margin-top:8px;font-size:11px;color:var(--t3)">${S.receipt_footer}</div>`:’’}
+
+  </div>`;
+}
+
+async function doBill(){
+if(!orderId){toast(‘No order for this table’,‘err’);return;}
+try{
+const order=await api(’/orders/’+orderId);
+billOId=order.id;
+// Show preview first
+document.getElementById(‘bill-h’).textContent=‘Bill — ‘+(order.table_number?‘Table ‘+order.table_number:‘Takeaway’);
+document.getElementById(‘bill-rcpt’).innerHTML=buildRcptHtml(order);
+document.getElementById(‘bill-s1’).style.display=’’;
+document.getElementById(‘bill-s2’).style.display=‘none’;
+selPayMethod=’’;
+ov(‘ov-bill’);
+}catch(e){toast(e.message,‘err’);}
+}
+
+function doBillPrint(){
+// Close preview, emit print request to server (server relays to printserver)
+cov(‘ov-bill’);
+if(socket){
+socket.emit(‘print_receipt_request’,{order_id:billOId});
+}
+// Mark table blue (bill_requested)
+if(orderId){
+api(’/orders/’+orderId+’/request-bill’,‘POST’,{}).then(()=>{
+const idx=allTables.findIndex(t=>t.id===tableId);
+if(idx>=0)allTables[idx].status=‘bill_requested’;
+}).catch(()=>{});
+}
+lockOrderForBill();
+toast(‘Receipt sent to printer — now select payment’,‘ok’);
+}
+
+function lockOrderForBill(){
+billPrinted=true;
+// Grey out Send Order — keep visible but disabled
+document.querySelectorAll(’.ab.send’).forEach(b=>{
+b.style.opacity=‘0.35’; b.style.pointerEvents=‘none’;
+b.textContent=‘Bill Printed ✓’; b.style.background=’#64748b’;
+});
+// Hide discount/split/clear — not relevant after bill
+document.querySelectorAll(’.ab.disc,.ab.split,.ab.clr’).forEach(b=>{b.style.display=‘none’;});
+setBillBtn(‘Pay / Close’,‘pm’,()=>doBillPayStep());
+}
+
+async function doBillPayStep(){
+if(!orderId){toast(‘No order’,‘err’);return;}
+try{
+const order=await api(’/orders/’+orderId);
+document.getElementById(‘bill-h’).textContent=‘Close Table — ‘+(order.table_number?‘Table ‘+order.table_number:‘Takeaway’);
+billOId=order.id; selPayMethod=’’;
+document.getElementById(‘pay-cash’).classList.remove(‘sel’);
+document.getElementById(‘pay-card’).classList.remove(‘sel’);
+document.getElementById(‘bill-s1’).style.display=‘none’;
+document.getElementById(‘bill-s2’).style.display=’’;
+ov(‘ov-bill’);
+}catch(e){toast(e.message,‘err’);}
+}
+function selPay(m){
+selPayMethod=m;
+document.getElementById(‘pay-cash’).classList.toggle(‘sel’,m===‘cash’);
+document.getElementById(‘pay-card’).classList.toggle(‘sel’,m===‘card’);
+}
+async function confirmClose(){
+if(!selPayMethod){toast(‘Select Cash or Card first’,‘err’);return;}
+try{
+await api(’/orders/’+billOId+’/close’,‘POST’,{payment_method:selPayMethod});
+cov(‘ov-bill’); toast(’Table closed — ’+selPayMethod,‘ok’);
+// Reset lock state
+cart=[]; sentItems=[]; tableId=null; orderId=null; tableNum=null; isTakeaway=false; billPrinted=false;
+await showHome();
+}catch(e){toast(e.message,‘err’);}
+}
+
+// ─── DAILY SUMMARY ────────────────────────────────────────────────────────────
+function openSum(){
+if(user.role===‘admin’)showSumContent();
+else{lkPin=’’;pips(‘lp’,0,4);document.getElementById(‘pl-err’).textContent=’’;ov(‘ov-plock’);}
+}
+async function showSumContent(){
+try{
+const s=await api(’/orders/summary/daily’);
+document.getElementById(‘sum-date’).textContent=new Date().toLocaleDateString(‘en-GB’,{weekday:‘long’,day:‘numeric’,month:‘long’,year:‘numeric’});
+document.getElementById(‘sum-body’).innerHTML=` <div class="sg"> <div class="sbox cash"><div class="sbl">CASH</div><div class="sbv">€${parseFloat(s.cash_total).toFixed(2)}</div></div> <div class="sbox card"><div class="sbl">CARD</div><div class="sbv">€${parseFloat(s.card_total).toFixed(2)}</div></div> <div class="sbox total"><div class="sbl">GRAND TOTAL</div><div class="sbv">€${parseFloat(s.grand_total).toFixed(2)}</div><div class="sbsub">${s.order_count} orders today</div></div> </div>`;
+ov(‘ov-sum’);
+}catch(e){toast(e.message,‘err’);}
+}
+function printSum(){
+const d=document.getElementById(‘sum-date’).textContent;
+const boxes=document.querySelectorAll(’.sbox’);
+let rows=’’;
+boxes.forEach(b=>{const l=b.querySelector(’.sbl’)?.textContent,v=b.querySelector(’.sbv’)?.textContent;if(l&&v)rows+=`<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px dashed #ccc;font-size:12px"><span>${l}</span><span style="font-weight:900">${v}</span></div>`;});
+// Revenue printed by printserver via socket
+if(socket) socket.emit(‘print_revenue_request’, {});
+}
+
+// ─── SETTINGS ─────────────────────────────────────────────────────────────────
+const sFields={
+‘s-rname’:‘receipt_name’,‘s-raddr’:‘receipt_address’,‘s-rphone’:‘receipt_phone’,
+‘s-rvat’:‘receipt_vat’,‘s-rfooter’:‘receipt_footer’,‘s-rwaiter’:‘receipt_show_waiter’,
+‘s-kcode’:‘kitchen_code’
+};
+function buildPslots(){
+const c=document.getElementById(‘pslots’); if(!c)return;
+const destOpts=[‘kitchen’,‘bar’,‘receipt’,‘all’].map(v=>`<option value="${v}">${{kitchen:'→ Kitchen',bar:'→ Bar',receipt:'→ Receipt',all:'→ All'}[v]}</option>`).join(’’);
+const typeOpts=[‘usb’,‘network’,‘bluetooth’].map(v=>`<option value="${v}">${{usb:'USB (cable)',network:'Network/WiFi',bluetooth:'Bluetooth'}[v]}</option>`).join(’’);
+c.innerHTML=[1,2,3,4].map(i=>` <div class="pslot" id="pslot${i}"> <div class="psh"><div class="psn">${i}</div><div class="pst">Printer Slot ${i}</div><span class="pss" id="pss${i}">Not configured</span></div> <div class="psg"> <div class="af" style="margin:0"><label>Windows Printer Name</label><input id="p${i}n" placeholder="e.g. EPSON TM-T20" oninput="updPs(${i})"></div> <div class="af" style="margin:0"><label>Function</label><select id="p${i}d">${destOpts}</select></div> <div class="af" style="margin:0"><label>Connection</label><select id="p${i}t" onchange="updPs(${i})">${typeOpts}</select></div> <div class="af" style="margin:0;align-self:end"><button class="btn sm" onclick="testPrinter(${i})" style="width:100%">Test</button></div> </div> <div class="af" id="pip${i}" style="margin-top:5px;display:none"><label>IP Address</label><input id="p${i}ip" placeholder="192.168.1.100"></div> </div>`).join(’’);
+}
+function updPs(i){
+const n=document.getElementById(`p${i}n`)?.value?.trim();
+const t=document.getElementById(`p${i}t`)?.value;
+document.getElementById(`pip${i}`).style.display=t===‘network’?‘flex’:‘none’;
+const st=document.getElementById(`pss${i}`);
+if(st){st.textContent=n?‘Configured’:‘Not configured’;st.className=‘pss’+(n?’ ok’:’’);}
+document.getElementById(`pslot${i}`).className=‘pslot’+(n?’ cfg’:’’);
+}
+function testPrinter(i){
+const n=document.getElementById(`p${i}n`)?.value?.trim()||‘Printer ‘+i;
+toast(‘Test print sent via printserver — check that printserver tab is open’,‘info’);
+}
+function doTestPrint(){
+toast(‘Test print sent via printserver — check that printserver tab is open’,‘info’);
+}
+function updRcptPrev(){
+const box=document.getElementById(‘rcpt-prev’); if(!box)return;
+box.innerHTML=` <div style="text-align:center;font-weight:900;font-size:13px">${S.receipt_name||'Restaurant'}</div> ${S.receipt_address?`<div style="text-align:center;font-size:10px;color:var(--t3)">${S.receipt_address}</div>`:''} <div style="border-top:1px dashed var(--b2);margin:4px 0;padding-top:4px"> <div style="display:flex;justify-content:space-between;font-size:11px"><span>1× Espresso</span><span>€2.50</span></div> <div style="display:flex;justify-content:space-between;font-size:11px"><span>2× Beer</span><span>€8.00</span></div> </div> <div style="border-top:1px dashed var(--b2);padding-top:4px;display:flex;justify-content:space-between;font-weight:700;font-size:12px"><span>TOTAL</span><span>€10.50</span></div> ${S.receipt_footer?`<div style="text-align:center;font-size:10px;color:var(--t3);margin-top:6px">${S.receipt_footer}</div>`:''}`;
+}
+async function loadSettings(){
+try{
+S=await api(’/settings’);
+Object.entries(sFields).forEach(([elId,key])=>{const el=document.getElementById(elId);if(el)el.value=S[key]||’’;});
+for(let i=1;i<=4;i++){
+const n=document.getElementById(`p${i}n`),d=document.getElementById(`p${i}d`),t=document.getElementById(`p${i}t`),ip=document.getElementById(`p${i}ip`);
+if(n)n.value=S[`printer_${i}_name`]||’’;
+if(d)d.value=S[`printer_${i}_dest`]||‘kitchen’;
+if(t)t.value=S[`printer_${i}_type`]||‘usb’;
+if(ip)ip.value=S[`printer_${i}_ip`]||’’;
+updPs(i);
+}
+updRcptPrev();
+}catch(e){toast(‘Error loading settings’,‘err’);}
+}
+async function saveSettings(){
+const body={};
+Object.entries(sFields).forEach(([elId,key])=>{const el=document.getElementById(elId);if(el)body[key]=el.value;});
+for(let i=1;i<=4;i++){
+const n=document.getElementById(`p${i}n`),d=document.getElementById(`p${i}d`),t=document.getElementById(`p${i}t`),ip=document.getElementById(`p${i}ip`);
+body[`printer_${i}_name`]=n?.value||’’;body[`printer_${i}_dest`]=d?.value||‘kitchen’;
+body[`printer_${i}_type`]=t?.value||‘usb’;body[`printer_${i}_ip`]=ip?.value||’’;
+}
+try{S=await api(’/settings’,‘PUT’,body);updRcptPrev();toast(‘Settings saved’,‘ok’);}
+catch(e){toast(e.message,‘err’);}
+}
+
+// ─── ADMIN ────────────────────────────────────────────────────────────────────
+function showAdmin(){sv(‘admin’);aTab(document.querySelector(’.adt’),‘as-orders’);}
+function aTab(el,sec){
+document.querySelectorAll(’.adt’).forEach(t=>t.classList.remove(‘on’));
+if(el)el.classList.add(‘on’);
+document.querySelectorAll(’.asec’).forEach(s=>s.classList.remove(‘on’));
+document.getElementById(sec).classList.add(‘on’);
+({
+‘as-orders’:loadOrders,
+‘as-reports’:()=>loadRep(‘today’,document.querySelector(’.pbtn’)),
+‘as-menu’:loadMenuAdmin,
+‘as-tables’:loadAdminTables,
+‘as-staff’:loadStaff,
+‘as-settings’:()=>{buildPslots();loadSettings();}
+})[sec]?.();
+}
+
+// ORDERS with filters
+function clearOFilters(){
+document.getElementById(‘f-status’).value=‘all’;
+[‘f-table’,‘f-waiter’,‘f-from’,‘f-to’].forEach(id=>{const el=document.getElementById(id);if(el)el.value=’’;});
+loadOrders();
+}
+async function loadOrders(){
+try{
+const p=new URLSearchParams();
+const st=document.getElementById(‘f-status’)?.value||‘all’; if(st!==‘all’)p.append(‘status’,st);
+const tb=document.getElementById(‘f-table’)?.value; if(tb)p.append(‘table’,tb);
+const wt=document.getElementById(‘f-waiter’)?.value; if(wt)p.append(‘waiter’,wt);
+const fr=document.getElementById(‘f-from’)?.value; if(fr)p.append(‘date_from’,fr);
+const to=document.getElementById(‘f-to’)?.value; if(to)p.append(‘date_to’,to);
+const orders=await api(’/orders/all?’+p.toString());
+const b=document.getElementById(‘ord-tbody’); b.innerHTML=’’;
+if(!orders.length){b.innerHTML=’<tr><td colspan="10" style="text-align:center;padding:14px;color:var(--t3)">No orders found</td></tr>’;return;}
+orders.forEach(o=>{
+const tr=document.createElement(‘tr’);
+const ds=o.discount_type?`<span style="font-size:9px;color:var(--gr);font-weight:700">${o.discount_type==='percent'?o.discount_value+'%':'€'+parseFloat(o.discount_value).toFixed(2)}</span>`:’—’;
+tr.innerHTML=` <td style="color:var(--t3);font-weight:600">#${o.id}</td> <td style="font-weight:700;color:var(--bl)">${o.daily_ticket_num!=null?'T'+o.daily_ticket_num:'—'}</td> <td style="font-weight:700">${o.table_number||'TA'}</td> <td>${o.waiter_name||'—'}</td> <td style="color:var(--bl);font-weight:700">€${parseFloat(o.total||0).toFixed(2)}</td> <td>${ds}</td> <td>${o.payment_method?`<span class="abg ${o.payment_method}">${o.payment_method}</span>`:'—'}</td> <td><span class="abg ${o.status}">${o.status.replace('_',' ')}</span></td> <td style="color:var(--t3);font-size:10px">${new Date(o.created_at).toLocaleString('en-GB')}</td> <td style="display:flex;gap:3px"> <button class="btn sm" onclick="viewOrd(${o.id})">View</button> <button class="btn sm red" onclick="delOrd(${o.id})">Del</button> </td>`;
+b.appendChild(tr);
+});
+}catch(e){toast(e.message,‘err’);}
+}
+async function viewOrd(id){
+try{
+const o=await api(’/orders/’+id);
+const items=o.items||[];
+const rows=items.map(i=>{
+const c=i.cancelled;
+return `<div class="rrow" style="${c?'text-decoration:line-through;color:var(--t3)':''}"> <span>${i.quantity}× ${i.product_name}${i.notes?' ('+i.notes+')':''}${c?' [removed by '+(i.cancelled_by_name||'staff')+']':''}</span> <span>${c?'—':'€'+(parseFloat(i.product_price)*i.quantity).toFixed(2)}</span> </div>`;
+}).join(’’);
+const disc=o.discount_type?`<div class="rrow" style="font-size:10px;color:var(--gr)"><span>Discount (${o.discount_type==='percent'?o.discount_value+'%':'€'+parseFloat(o.discount_value).toFixed(2)})</span><span>applied</span></div>`:’’;
+const splits=(o.splits||[]).length?`<div class="rdiv"></div><div style="font-size:9px;font-weight:700;text-transform:uppercase;color:var(--t3);margin-bottom:3px">Split Bills</div>`+
+o.splits.map(sp=>`<div class="rrow" style="font-size:11px"><span>Part ${sp.split_index}</span><span>€${parseFloat(sp.subtotal).toFixed(2)}</span></div>`).join(’’):’’;
+document.getElementById(‘ord-detail’).innerHTML=` <div class="rcpt"> <div class="rc rb">Order #${o.id}${o.daily_ticket_num!=null?' — T#'+o.daily_ticket_num:''}</div> <div class="rc" style="font-size:11px;color:var(--t3);margin:2px 0">${o.table_number?'Table '+o.table_number:'Takeaway'} · ${o.waiter_name||'—'} · ${new Date(o.created_at).toLocaleString('en-GB')}</div> <div class="rdiv"></div>${rows}${disc}<div class="rdiv"></div> <div class="rrow rb"><span>TOTAL</span><span>€${parseFloat(o.total||0).toFixed(2)}</span></div> ${o.payment_method?`<div class="rrow" style="font-size:10px;color:var(--t3);margin-top:2px"><span>Payment</span><span>${o.payment_method}</span></div>`:''} ${splits} </div>`;
+ov(‘ov-ord’);
+}catch(e){toast(e.message,‘err’);}
+}
+function printOrdView(){toast(‘To print order details, use the printserver tab’,‘info’);}
+async function delOrd(id){
+const ok=await confirm2(‘Delete this order permanently?\nThe table will be freed.’,‘Delete’,true,‘🗑️’);
+if(!ok)return;
+try{await api(’/orders/’+id,‘DELETE’);loadOrders();toast(‘Order deleted’,‘ok’);}catch(e){toast(e.message,‘err’);}
+}
+
+// REPORTS
+async function loadRep(period,el){
+document.querySelectorAll(’.pbtn’).forEach(b=>b.classList.remove(‘on’));
+if(el)el.classList.add(‘on’);
+try{
+const d=await api(’/orders/reports/’+period); const s=d.summary;
+document.getElementById(‘rep-stats’).innerHTML=` <div class="stat"><div class="stat-l">Revenue</div><div class="stat-v">€${parseFloat(s.grand_total).toFixed(2)}</div><div class="stat-s">${s.order_count} orders</div></div> <div class="stat"><div class="stat-l">Cash</div><div class="stat-v">€${parseFloat(s.cash_total).toFixed(2)}</div></div> <div class="stat"><div class="stat-l">Card</div><div class="stat-v">€${parseFloat(s.card_total).toFixed(2)}</div></div> <div class="stat"><div class="stat-l">Avg/Order</div><div class="stat-v">${s.order_count>0?'€'+(parseFloat(s.grand_total)/parseInt(s.order_count)).toFixed(2):'—'}</div><div class="stat-s">${s.days_active||0} days</div></div>`;
+document.getElementById(‘rep-daily’).innerHTML=(d.daily||[]).map(r=>` <div class="drow"><div style="font-size:11px;font-weight:700;min-width:95px">${new Date(r.day).toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'})}</div> <div style="font-size:13px;font-weight:800;color:var(--bl)">€${parseFloat(r.total).toFixed(2)}</div> <div style="font-size:10px;color:var(--t3)">${r.orders} orders</div></div>`).join(’’);
+document.getElementById(‘rep-prods’).innerHTML=(d.topProducts||[]).map((p,i)=>` <div class="tpr"><div class="tpr-rk">${i+1}</div> <div style="flex:1;font-size:11px;font-weight:600">${p.product_name}</div> <div style="font-size:10px;color:var(--t3)">×${p.qty}</div> <div style="font-size:12px;font-weight:800;color:var(--bl)">€${parseFloat(p.revenue).toFixed(2)}</div></div>`).join(’’);
+const ca=d.cancels||{};
+document.getElementById(‘rep-cancel’).innerHTML=`<div class="drow"><div style="font-size:11px;font-weight:700">Cancelled Items</div><div style="font-size:13px;font-weight:800;color:var(--rd)">${ca.count||0}</div><div style="font-size:10px;color:var(--t3)">€${parseFloat(ca.value||0).toFixed(2)} value</div></div>`;
+const di=d.discounts||{};
+document.getElementById(‘rep-disc’).innerHTML=`<div class="drow"><div style="font-size:11px;font-weight:700">Discounts Given</div><div style="font-size:13px;font-weight:800;color:var(--gr)">${di.count||0} orders</div><div style="font-size:10px;color:var(--t3)">€${parseFloat(di.total_disc||0).toFixed(2)} total</div></div>`;
+}catch(e){toast(e.message,‘err’);}
+}
+
+// MENU ADMIN — shows products when category/sub is selected
+let adminCatSel=null, adminSubSel=null;
+
+async function loadMenuAdmin(){
+const cats=await api(’/menu/categories’);
+const lc=document.getElementById(‘list-cats’); lc.innerHTML=’’;
+const sc4s=document.getElementById(‘sel-c4s’); const pvc=sc4s.value;
+sc4s.innerHTML=’<option value="">— choose —</option>’;
+const sc4p=document.getElementById(‘sel-c4p’); const pvp=sc4p.value;
+sc4p.innerHTML=’<option value="">— choose —</option>’;
+cats.forEach(c=>{
+const dot=`<span style="width:8px;height:8px;border-radius:50%;background:${c.color||'#2563eb'};display:inline-block;margin-right:5px;vertical-align:middle"></span>`;
+lc.appendChild(mkRow(dot+c.name,null,[
+{l:‘Edit’,fn:`openEdit('cat',${c.id},'${esc(c.name)}','${c.color||'#2563eb'}')`},
+{l:‘Products’,fn:`showProdsForCat(${c.id},'${esc(c.name)}')`},
+{l:‘Del’,fn:`delCat(${c.id})`,r:true}
+]));
+const o=document.createElement(‘option’); o.value=c.id; o.textContent=c.name;
+sc4s.appendChild(o.cloneNode(true)); sc4p.appendChild(o);
+});
+if(pvc)sc4s.value=pvc;
+if(pvp)sc4p.value=pvp;
+await rebuildSubSel(sc4s.value);
+await loadSubListAdmin(sc4s.value);
+// Restore product list if something was selected
+if(adminSubSel)await showProdsForSub(adminSubSel.id,adminSubSel.name);
+else if(adminCatSel)await showProdsForCat(adminCatSel.id,adminCatSel.name);
+else hideProdList();
+}
+
+function hideProdList(){
+document.getElementById(‘prod-filter-label’).style.display=‘none’;
+document.getElementById(‘list-prods’).innerHTML=’’;
+}
+
+async function onCatSelectAdmin(catId){
+await loadSubListAdmin(catId);
+if(catId)await showProdsForCat(parseInt(catId));
+else hideProdList();
+}
+
+async function showProdsForCat(catId,catName){
+adminCatSel={id:catId,name:catName||catId}; adminSubSel=null;
+const cats=await api(’/menu/categories’);
+const cat=cats.find(c=>c.id==catId);
+const name=cat?.name||catName||catId;
+const prods=await api(’/menu/products?category_id=’+catId+’&all=true’);
+showProdList(prods,’Category: ’+name);
+}
+
+async function showProdsForSub(subId,subName){
+adminSubSel={id:subId,name:subName}; adminCatSel=null;
+const prods=await api(’/menu/products?subcategory_id=’+subId);
+showProdList(prods,’Subcategory: ’+subName);
+}
+
+function showProdList(prods,label){
+const lbl=document.getElementById(‘prod-filter-label’);
+lbl.textContent=label+’ — ‘+prods.length+’ product’+(prods.length!==1?‘s’:’’);
+lbl.style.display=‘block’;
+const lp=document.getElementById(‘list-prods’); lp.innerHTML=’’;
+if(!prods.length){lp.innerHTML=’<div style="font-size:12px;color:var(--t3);padding:8px 4px">No products here. Add one using the form above.</div>’;return;}
+prods.forEach(p=>{
+const dest=p.product_type===‘drink’?‘Bar’:‘Kitchen’;
+lp.appendChild(mkRow(p.name,`€${parseFloat(p.price).toFixed(2)} · ${dest}${p.description?' · '+p.description:''}`,
+[{l:‘Edit’,fn:`openEdit('prod',${p.id},'${esc(p.name)}',${p.price},'${esc(p.description||'')}','${p.product_type||'food'}')`},
+{l:‘Del’,fn:`delProd(${p.id})`,r:true}]
+));
+});
+}
+
+async function updSubSel4P(){await rebuildSubSel(document.getElementById(‘sel-c4p’).value);}
+async function rebuildSubSel(catId){
+const sel=document.getElementById(‘sel-s4p’); const prev=sel.value;
+sel.innerHTML=’<option value="">— none (direct in category) —</option>’;
+if(!catId)return;
+const subs=await api(’/menu/subcategories/’+catId);
+subs.forEach(s=>{const o=document.createElement(‘option’);o.value=s.id;o.textContent=s.name;sel.appendChild(o);});
+if(prev)sel.value=prev;
+}
+async function loadSubListAdmin(catId){
+const ls=document.getElementById(‘list-subs’); ls.innerHTML=’’;
+if(!catId)return;
+const subs=await api(’/menu/subcategories/’+catId);
+subs.forEach(s=>{
+ls.appendChild(mkRow(s.name,null,[
+{l:‘Edit’,fn:`openEdit('sub',${s.id},'${esc(s.name)}')`},
+{l:‘Prods’,fn:`showProdsForSub(${s.id},'${esc(s.name)}')`},
+{l:‘Del’,fn:`delSub(${s.id})`,r:true}
+]));
+});
+}
+
+async function addCat(){
+const n=document.getElementById(‘in-cn’).value.trim(),col=document.getElementById(‘in-cc’).value;
+if(!n){toast(‘Enter name’,‘err’);return;}
+try{await api(’/menu/categories’,‘POST’,{name:n,color:col});document.getElementById(‘in-cn’).value=’’;loadMenuAdmin();toast(‘Added’,‘ok’);}catch(e){toast(e.message,‘err’);}
+}
+async function addSub(){
+const cid=document.getElementById(‘sel-c4s’).value,n=document.getElementById(‘in-sn’).value.trim();
+if(!cid||!n){toast(‘Select category and enter name’,‘err’);return;}
+try{await api(’/menu/subcategories’,‘POST’,{category_id:cid,name:n});document.getElementById(‘in-sn’).value=’’;loadMenuAdmin();toast(‘Added’,‘ok’);}catch(e){toast(e.message,‘err’);}
+}
+async function addProd(){
+const catId=document.getElementById(‘sel-c4p’).value,subId=document.getElementById(‘sel-s4p’).value;
+const n=document.getElementById(‘in-pn’).value.trim(),pr=document.getElementById(‘in-pp’).value;
+const desc=document.getElementById(‘in-pd’).value.trim(),ptype=document.getElementById(‘in-ptype’).value;
+if(!catId){toast(‘Select a category’,‘err’);return;}
+if(!n||!pr){toast(‘Enter name and price’,‘err’);return;}
+try{
+await api(’/menu/products’,‘POST’,{category_id:catId,subcategory_id:subId||null,name:n,price:parseFloat(pr),description:desc,product_type:ptype});
+document.getElementById(‘in-pn’).value=’’;document.getElementById(‘in-pp’).value=’’;document.getElementById(‘in-pd’).value=’’;
+loadMenuAdmin();toast(‘Product added’,‘ok’);
+}catch(e){toast(e.message,‘err’);}
+}
+async function delCat(id){
+const ok=await confirm2(‘Delete this category and ALL its products?’,‘Delete’,true,‘🗑️’);
+if(!ok)return;try{await api(’/menu/categories/’+id,‘DELETE’);loadMenuAdmin();toast(‘Deleted’,‘ok’);}catch(e){toast(e.message,‘err’);}
+}
+async function delSub(id){
+const ok=await confirm2(‘Delete this subcategory?’,‘Delete’,true,‘🗑️’);
+if(!ok)return;try{await api(’/menu/subcategories/’+id,‘DELETE’);loadMenuAdmin();toast(‘Deleted’,‘ok’);}catch(e){toast(e.message,‘err’);}
+}
+async function delProd(id){
+const ok=await confirm2(‘Delete this product?’,‘Delete’,true,‘🗑️’);
+if(!ok)return;
+try{
+await api(’/menu/products/’+id,‘DELETE’);
+if(adminSubSel)await showProdsForSub(adminSubSel.id,adminSubSel.name);
+else if(adminCatSel)await showProdsForCat(adminCatSel.id,adminCatSel.name);
+toast(‘Deleted’,‘ok’);
+}catch(e){toast(e.message,‘err’);}
+}
+function openEdit(type,id,…args){
+editType=type; editId=id;
+document.getElementById(‘edit-h’).textContent={cat:‘Edit Category’,sub:‘Edit Subcategory’,prod:‘Edit Product’}[type];
+const body=document.getElementById(‘edit-body’);
+if(type===‘cat’)
+body.innerHTML=`<div class="af"><label>Name</label><input id="ed0" value="${args[0]}"></div><div class="af"><label>Color</label><input id="ed1" type="color" value="${args[1]||'#2563eb'}" style="height:34px;padding:2px;width:100%"></div>`;
+else if(type===‘sub’)
+body.innerHTML=`<div class="af"><label>Name</label><input id="ed0" value="${args[0]}"></div>`;
+else
+body.innerHTML=` <div class="af"><label>Name</label><input id="ed0" value="${args[0]}"></div> <div class="af"><label>Price €</label><input id="ed1" type="number" step="0.10" value="${args[1]}"></div> <div class="af"><label>Description</label><input id="ed2" value="${args[2]||''}"></div> <div class="af"><label>Prints To</label><select id="ed3"> <option value="food"${args[3]==='food'?' selected':''}>Kitchen (Food)</option> <option value="drink"${args[3]==='drink'?' selected':''}>Bar (Drink)</option> </select></div>`;
+ov(‘ov-edit’);
+}
+async function saveEdit(){
+try{
+if(editType===‘cat’)await api(’/menu/categories/’+editId,‘PUT’,{name:document.getElementById(‘ed0’).value.trim(),color:document.getElementById(‘ed1’).value});
+else if(editType===‘sub’)await api(’/menu/subcategories/’+editId,‘PUT’,{name:document.getElementById(‘ed0’).value.trim()});
+else await api(’/menu/products/’+editId,‘PUT’,{name:document.getElementById(‘ed0’).value.trim(),price:parseFloat(document.getElementById(‘ed1’).value),description:document.getElementById(‘ed2’).value.trim(),product_type:document.getElementById(‘ed3’).value});
+cov(‘ov-edit’); loadMenuAdmin(); toast(‘Saved’,‘ok’);
+}catch(e){toast(e.message,‘err’);}
+}
+
+// TABLES
+async function loadAdminTables(){
+const tables=await api(’/tables’); const list=document.getElementById(‘list-tables’); list.innerHTML=’’;
+tables.forEach(t=>{
+const c={empty:‘var(–gr)’,occupied:‘var(–rd)’,bill_requested:‘var(–bl)’}[t.status]||‘var(–t3)’;
+list.appendChild(mkRow(‘Table ‘+t.number,t.status,[{l:‘Del’,fn:`delTable(${t.id})`,r:true}],c));
+});
+}
+async function addTable(){
+const n=parseInt(document.getElementById(‘in-tn’).value);
+if(!n){toast(‘Enter number’,‘err’);return;}
+try{await api(’/tables’,‘POST’,{number:n});document.getElementById(‘in-tn’).value=’’;loadAdminTables();toast(‘Added’,‘ok’);}catch(e){toast(e.message,‘err’);}
+}
+async function delTable(id){
+const ok=await confirm2(‘Delete this table?’,‘Delete’,true,‘🗑️’);
+if(!ok)return;try{await api(’/tables/’+id,‘DELETE’);loadAdminTables();toast(‘Deleted’,‘ok’);}catch(e){toast(e.message,‘err’);}
+}
+
+// STAFF
+async function loadStaff(){
+const users=await api(’/users’); const list=document.getElementById(‘list-staff’); list.innerHTML=’’;
+users.filter(u=>u.active).forEach(u=>{list.appendChild(mkRow(u.name,u.role+’ · PIN: ‘+u.pin,[{l:‘Remove’,fn:`delStaff(${u.id})`,r:true}]));});
+}
+async function addStaff(){
+const n=document.getElementById(‘in-stname’).value.trim(),p=document.getElementById(‘in-stpin’).value.trim(),r=document.getElementById(‘in-strole’).value;
+if(!n||!p){toast(‘Enter name and PIN’,‘err’);return;}
+try{await api(’/users’,‘POST’,{name:n,pin:p,role:r});document.getElementById(‘in-stname’).value=’’;document.getElementById(‘in-stpin’).value=’’;loadStaff();toast(‘Added’,‘ok’);}catch(e){toast(e.message,‘err’);}
+}
+async function delStaff(id){
+const ok=await confirm2(‘Remove this staff member?’,‘Remove’,true,‘🗑️’);
+if(!ok)return;try{await api(’/users/’+id,‘DELETE’);loadStaff();toast(‘Removed’,‘ok’);}catch(e){toast(e.message,‘err’);}
+}
+
+// ─── HELPERS ─────────────────────────────────────────────────────────────────
+function mkRow(main,sub,actions,subColor){
+const d=document.createElement(‘div’); d.className=‘arow’;
+const btns=actions.map(a=>`<button class="btn sm${a.r?' red':''}" onclick="${a.fn}">${a.l}</button>`).join(’’);
+d.innerHTML=`<span class="ar-m">${main}</span>${sub?`<span class=“ar-s”${subColor?` style="color:${subColor}"`:’’}>${sub}</span>`:''}<span class="ar-a">${btns}</span>`;
+return d;
+}
+async function api(path,method=‘GET’,body=null){
+const opts={method,headers:{‘Content-Type’:‘application/json’,‘Authorization’:‘Bearer ‘+token}};
+if(body)opts.body=JSON.stringify(body);
+const r=await fetch(API+path,opts); const d=await r.json();
+if(!r.ok)throw new Error(d.error||‘Request failed’); return d;
+}
+function ov(id){document.getElementById(id).classList.add(‘on’);}
+function cov(id){document.getElementById(id).classList.remove(‘on’);}
+function toast(msg,type=‘info’){
+const el=document.createElement(‘div’); el.className=‘toast ‘+type; el.textContent=msg;
+document.getElementById(‘toasts’).appendChild(el); setTimeout(()=>el.remove(),4000);
+}
+function esc(s){return String(s||’’).replace(/\/g,’\\’).replace(/’/g,”\’”).replace(/”/g,’"’);}
+</script>
+
+</body>
+</html>
